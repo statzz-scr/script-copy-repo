@@ -1,0 +1,44 @@
+--// GUI PROFISSIONAL - STEAL A BRAINROT TOOLS (Fundo Prata + RGB + Drag Suave) local Players = game:GetService("Players") local RS = game:GetService("ReplicatedStorage") local TweenService = game:GetService("TweenService")
+
+local player = Players.LocalPlayer local backpack = player:WaitForChild("Backpack")
+
+-- Criar ScreenGui local screenGui = Instance.new("ScreenGui") screenGui.Name = "StealBrainrotToolsUI" screenGui.Parent = player:WaitForChild("PlayerGui")
+
+-- Janela principal local mainFrame = Instance.new("Frame") mainFrame.Size = UDim2.new(0, 330, 0, 190) mainFrame.Position = UDim2.new(0.5, -165, 0.5, -95) mainFrame.BackgroundColor3 = Color3.fromRGB(180, 180, 180) -- Cor base PRATA mainFrame.Active = true mainFrame.Parent = screenGui
+
+local cornerMain = Instance.new("UICorner") cornerMain.CornerRadius = UDim.new(0, 18) cornerMain.Parent = mainFrame
+
+-- GRADIENTE para efeito de prata refletida local gradient = Instance.new("UIGradient") gradient.Color = ColorSequence.new{ ColorSequenceKeypoint.new(0.00, Color3.fromRGB(230, 230, 230)), ColorSequenceKeypoint.new(0.20, Color3.fromRGB(210, 210, 210)), ColorSequenceKeypoint.new(0.50, Color3.fromRGB(255, 255, 255)), ColorSequenceKeypoint.new(0.80, Color3.fromRGB(200, 200, 200)), ColorSequenceKeypoint.new(1.00, Color3.fromRGB(230, 230, 230)) } gradient.Rotation = 45 gradient.Parent = mainFrame
+
+-- BRILHO metálico falso (luz) local shine = Instance.new("Frame") shine.Size = UDim2.new(1, 0, 0, 50) shine.Position = UDim2.new(0, 0, 0, -10) shine.BackgroundColor3 = Color3.fromRGB(255, 255, 255) shine.BackgroundTransparency = 0.75 shine.Parent = mainFrame
+
+local cornerShine = Instance.new("UICorner") cornerShine.CornerRadius = UDim.new(0, 18) cornerShine.Parent = shine
+
+-- Stroke neon RGB local uiStroke = Instance.new("UIStroke") uiStroke.Thickness = 2.2 uiStroke.Parent = mainFrame
+
+-- Animação RGB task.spawn(function() while true do for hue = 0, 1, 0.002 do uiStroke.Color = Color3.fromHSV(hue, 1, 1) gradient.Color = ColorSequence.new{ ColorSequenceKeypoint.new(0.00, Color3.fromHSV(hue, 0.1, 0.95)), ColorSequenceKeypoint.new(0.40, Color3.fromHSV(hue, 0.07, 1)), ColorSequenceKeypoint.new(1.00, Color3.fromHSV(hue, 0.1, 0.9)) } task.wait() end end end)
+
+-- Título local title = Instance.new("TextLabel") title.Size = UDim2.new(1, 0, 0, 50) title.BackgroundTransparency = 1 title.Text = "Steal a Brainrot Tools" title.TextColor3 = Color3.fromRGB(30, 30, 30) title.Font = Enum.Font.GothamBold title.TextSize = 22 title.Parent = mainFrame
+
+-- Botão local giveBtn = Instance.new("TextButton") giveBtn.Size = UDim2.new(0.7, 0, 0, 45) giveBtn.Position = UDim2.new(0.15, 0, 0.55, 0) giveBtn.BackgroundColor3 = Color3.fromRGB(50, 50, 50) giveBtn.Text = "Give All Tools" giveBtn.TextColor3 = Color3.fromRGB(255, 255, 255) giveBtn.Font = Enum.Font.GothamSemibold giveBtn.TextSize = 20 giveBtn.Parent = mainFrame
+
+local cornerBtn = Instance.new("UICorner") cornerBtn.CornerRadius = UDim.new(0, 12) cornerBtn.Parent = giveBtn
+
+-- Hover elegante giveBtn.MouseEnter:Connect(function() TweenService:Create(giveBtn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(70, 70, 70)}):Play() end)
+
+giveBtn.MouseLeave:Connect(function() TweenService:Create(giveBtn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(50, 50, 50)}):Play() end)
+
+-- Função do botão giveBtn.MouseButton1Click:Connect(function() local itemsFolder = RS:FindFirstChild("Items") if itemsFolder then for _, item in ipairs(itemsFolder:GetChildren()) do if item:IsA("Tool") then item:Clone().Parent = backpack end end end end)
+
+-- SISTEMA DE ARRASTAR SUAVE local dragging = false local dragStart, startPos
+
+local function update(input) local delta = input.Position - dragStart local newPos = UDim2.new( startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y )
+
+TweenService:Create(mainFrame, TweenInfo.new(0.15, Enum.EasingStyle.Quad), {Position = newPos}):Play()
+end
+
+mainFrame.InputBegan:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then dragging = true dragStart = input.Position startPos = mainFrame.Position end end)
+
+mainFrame.InputChanged:Connect(function(input) if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then update(input) end end)
+
+mainFrame.InputEnded:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then dragging = false end end)
