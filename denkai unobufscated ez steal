@@ -1,0 +1,1349 @@
+getgenv().ESPTracers = true
+
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
+local TweenService = game:GetService("TweenService")
+local Workspace = game:GetService("Workspace")
+
+local PlotController = require(ReplicatedStorage.Controllers:WaitForChild("PlotController"))
+local LocalPlayer = Players.LocalPlayer
+
+local TARGET_WIDTH = 0.5
+local FADE_TIME = 0.35
+local RAINBOW_SPEED = 0.30
+local BRIGHTNESS_ON = 10
+local BRIGHTNESS_OFF = 0.5
+
+local currentBeam, currentAttach0, currentAttach1, plotSignHighlight = nil, nil, nil, nil
+local hue = 0
+local selectionBoxes = {}
+local originalProps = {}
+
+local function GetMyPlotModel()
+	local ok, myPlot = pcall(function() return PlotController.GetMyPlot() end)
+	if not ok or not myPlot then return nil end
+	return myPlot.PlotModel
+end
+
+local function GetMyPlotSignSurface()
+	local plot = GetMyPlotModel()
+	if not plot then return nil end
+
+	local sign = plot:FindFirstChild("PlotSign")
+	if sign and sign:FindFirstChild("SurfaceGui") then
+		return sign.SurfaceGui
+	end
+	return nil
+end
+
+local function tweenProperty(instance, props, info)
+	return TweenService:Create(instance, info or TweenInfo.new(FADE_TIME, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), props)
+end
+
+local function savePartOriginal(part)
+	if not part or not part:IsA("BasePart") then return end
+	if originalProps[part] then return end
+	originalProps[part] = {
+		Color = part.Color,
+		Material = part.Material,
+	}
+end
+
+local function restoreAllOriginals()
+	for part, props in pairs(originalProps) do
+		if part and part.Parent then
+			pcall(function()
+				part.Color = props.Color
+				part.Material = props.Material
+			end)
+		end
+	end
+	originalProps = {}
+	for _, sb in ipairs(selectionBoxes) do
+		if sb and sb.Parent then
+			pcall(function() sb:Destroy() end)
+		end
+	end
+	selectionBoxes = {}
+end
+
+local function applyDecorationsOutline()
+	local plot = GetMyPlotModel()
+	if not plot or not plot:FindFirstChild("Decorations") then return end
+
+	for _, deco in ipairs(plot.Decorations:GetDescendants()) do
+		if deco:IsA("BasePart") then
+			savePartOriginal(deco)
+			pcall(function()
+				deco.Color = Color3.fromRGB(30, 35, 30)
+			end)
+
+			local sb = Instance.new("SelectionBox")
+			sb.Name = "Decor_Outline"
+			sb.Adornee = deco
+			sb.LineThickness = 0.05
+			sb.Color3 = Color3.fromRGB(190, 90, 255)
+			sb.SurfaceTransparency = 1
+			sb.Parent = deco
+			table.insert(selectionBoxes, sb)
+		end
+	end
+end
+
+local function cleanup()
+	if currentBeam then pcall(function() currentBeam:Destroy() end) end
+	if currentAttach0 then pcall(function() currentAttach0:Destroy() end) end
+	if currentAttach1 then pcall(function() currentAttach1:Destroy() end) end
+	if plotSignHighlight then pcall(function() plotSignHighlight:Destroy() end) end
+	currentBeam, currentAttach0, currentAttach1, plotSignHighlight = nil, nil, nil, nil
+
+	restoreAllOriginals()
+end
+
+local function createEsp()
+	cleanup()
+	if not getgenv().ESPTracers then return end
+
+	local char = LocalPlayer.Character
+	if not char or not char:FindFirstChild("HumanoidRootPart") then return end
+	local surface = GetMyPlotSignSurface()
+	if not surface then
+		warn("")
+		return
+	end
+
+	currentAttach0 = Instance.new("Attachment", char.HumanoidRootPart)
+	currentAttach1 = Instance.new("Attachment", surface)
+
+	local beam = Instance.new("Beam")
+	beam.Attachment0 = currentAttach0
+	beam.Attachment1 = currentAttach1
+	beam.FaceCamera = true
+	beam.Width0 = 0
+	beam.Width1 = 0
+	beam.LightInfluence = 0
+	beam.Brightness = BRIGHTNESS_OFF
+	beam.Transparency = NumberSequence.new(0.08)
+	beam.Parent = surface
+	currentBeam = beam
+
+	local highlight = Instance.new("Highlight")
+	highlight.Name = "PlotSignHighlight"
+	highlight.Adornee = surface
+	highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+	highlight.FillTransparency = 0.5
+	highlight.OutlineTransparency = 0.1
+	highlight.Parent = Workspace
+	plotSignHighlight = highlight
+
+	local ti = TweenInfo.new(FADE_TIME, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+	tweenProperty(beam, { Width0 = TARGET_WIDTH, Width1 = TARGET_WIDTH, Brightness = BRIGHTNESS_ON }, ti):Play()
+
+	applyDecorationsOutline()
+end
+
+RunService.RenderStepped:Connect(function(dt)
+	if not currentBeam then return end
+	hue = (hue + dt * RAINBOW_SPEED) % 1
+	local color = Color3.fromHSV(hue, 1, 1)
+
+	pcall(function()
+		currentBeam.Color = ColorSequence.new(color)
+		if plotSignHighlight then
+			plotSignHighlight.FillColor = color
+			plotSignHighlight.OutlineColor = color
+		end
+	end)
+end)
+
+LocalPlayer.CharacterAdded:Connect(function()
+	task.wait()
+	createEsp()
+end)
+
+createEsp()
+
+
+
+
+task.spawn(function()
+    local Players = game:GetService("Players")
+    local TweenService = game:GetService("TweenService")
+    local HttpService = game:GetService("HttpService")
+    local RunService = game:GetService("RunService")
+    local UserInputService = game:GetService("UserInputService")
+
+    local player = Players.LocalPlayer
+    local playerGui = player:WaitForChild("PlayerGui")
+    local textbox = nil
+    local button = nil
+
+    local function safeParent(gui)
+        local ok = pcall(function() gui.Parent = game:GetService("CoreGui") end)
+        if not ok then
+            gui.Parent = playerGui
+        end
+    end
+
+    local function safeGetConnections(sig)
+        local ok, res = pcall(function() return getconnections(sig) end)
+        if ok and type(res) == "table" then return res end
+        return nil
+    end
+
+    local function safeFireSignal(signal)
+        if not signal then return false end
+        local cons = safeGetConnections(signal)
+        if cons then
+            for _, c in ipairs(cons) do
+                pcall(function()
+                    if type(c.Function) == "function" then
+                        pcall(c.Function)
+                    elseif type(c) == "function" then
+                        pcall(c)
+                    end
+                end)
+            end
+            return true
+        end
+        local ok, _ = pcall(function()
+            if signal.Fire then
+                signal:Fire()
+            elseif signal.Invoke then
+                signal:Invoke()
+            elseif signal.Activate then
+                signal:Activate()
+            elseif type(signal) == "function" then
+                signal()
+            end
+        end)
+        return ok
+    end
+
+    local function safeSetTextBox(tb, txt)
+        if not tb then return false end
+        pcall(function()
+            if tb.Focused then pcall(function() safeFireSignal(tb.Focused) end) end
+            tb.Text = tostring(txt)
+            if tb.FocusLost then pcall(function() safeFireSignal(tb.FocusLost) end) end
+        end)
+        return true
+    end
+
+    local function safeCallWithRender(fn, ...)
+        local args = {...}
+        local ok, res = pcall(function() return fn(unpack(args)) end)
+        if ok then return true, res end
+        pcall(function() RunService.RenderStepped:Wait() end)
+        ok, res = pcall(function() return fn(unpack(args)) end)
+        if ok then return true, res end
+        return false, res
+    end
+
+    local function ultraFindGUI()
+        spawn(function()
+            while true do
+                pcall(function()
+                    local roots = {game:GetService('CoreGui'), playerGui}
+                    for _, root in ipairs(roots) do
+                        for _, v in ipairs(root:GetDescendants()) do
+                            if v:IsA("TextBox") and v.Name:lower():match("inputbox") then
+                                textbox = v.Parent:FindFirstChild('TextBox') or v
+                            elseif v:IsA("TextButton") and v.Text:match("Join Job%-ID") then
+                                button = v.Parent:FindFirstChild('ImageButton') or v.Parent:FindFirstChild('TextButton') or v
+                            end
+                            if textbox and button then break end
+                        end
+                        if textbox and button then break end
+                    end
+                end)
+                if textbox and button then
+                    warn("Chilli Hub Elements Found")
+                    break
+                end
+                task.wait(1)
+            end
+        end)
+    end
+
+    ultraFindGUI()
+
+    if not textbox or not button then
+        warn('GUI Elements Not Found!')
+    end
+
+    local function ultraCheckjobid(id)
+        if not textbox or not button then return false end
+        pcall(function()
+            safeCallWithRender(function() safeSetTextBox(textbox, tostring(id)) end)
+        end)
+        local events = {button.Activated, button.MouseButton1Click, button.MouseButton1Down}
+        local clickCount = 0
+        local maxClicks = 3
+        for _, event in ipairs(events) do
+            if clickCount >= maxClicks then break end
+            local connections = safeGetConnections(event)
+            if connections then
+                for _, con in ipairs(connections) do
+                    if con.Function and clickCount < maxClicks then
+                        for i = 1, 3 do
+                            pcall(function()
+                                safeCallWithRender(function() con.Function() end)
+                            end)
+                            clickCount = clickCount + 1
+                            if clickCount >= maxClicks then break end
+                        end
+                    end
+                    if clickCount >= maxClicks then break end
+                end
+            else
+                if event then
+                    for i = 1, 3 do
+                        pcall(function() safeFireSignal(event) end)
+                        clickCount = clickCount + 1
+                        if clickCount >= maxClicks then break end
+                    end
+                end
+            end
+            if clickCount >= maxClicks then break end
+        end
+        return true
+    end
+
+    local HOSTS = {
+        "ws://144.172.110.44:1488",
+        "ws://localhost:1488",
+    }
+
+    local RECONNECT_DELAY = 2
+    local AUTO_RETRY = true
+    local MAX_PROCESSED_IDS = 30
+    local PROCESS_DELAY = 0.4
+
+    local ws = nil
+    local connected = false
+    local currentData = nil
+    local autoJoinEnabled = false
+    local processedJobIDs = {}
+    local lastConnectAttempt = 0
+    local forceProcessing = false
+    local stopRequested = false
+    local guiVisible = true
+    local lastProcessTime = 0
+
+    local screenGui = Instance.new("ScreenGui")
+    screenGui.Name = "UltraJobMonitor"
+    screenGui.ResetOnSpawn = false
+    screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    screenGui.Parent = playerGui
+    
+    local popupGui = Instance.new("ScreenGui")
+    popupGui.Name = "PopupGui"
+    popupGui.Parent = playerGui
+    popupGui.ResetOnSpawn = false
+
+    local popupContainer = Instance.new("Frame")
+    popupContainer.Size = UDim2.new(0, 300, 0, 600)
+    popupContainer.Position = UDim2.new(1, -310, 0, 0) 
+    popupContainer.BackgroundTransparency = 1
+    popupContainer.Parent = popupGui
+    popupContainer.ClipsDescendants = false
+
+    local function splitTextToLines(text, charsPerLine)
+    local lines = {}
+    local startPos = 1
+    while startPos <= #text do
+        table.insert(lines, text:sub(startPos, startPos + charsPerLine - 1))
+        startPos = startPos + charsPerLine
+    end
+    return table.concat(lines, "\n")
+end
+
+local function createPopup(msg, icon, duration)
+    icon = icon or "⚙️"
+    duration = duration or 3
+
+    local popup = Instance.new("Frame")
+    popup.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+    popup.BackgroundTransparency = 0
+    popup.BorderSizePixel = 0
+    popup.AnchorPoint = Vector2.new(0, 0)
+    popup.Position = UDim2.new(1, 10, 0, 0) 
+    popup.Parent = popupContainer
+    popup.ClipsDescendants = true
+
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, 10)
+    corner.Parent = popup
+
+    local uiStroke = Instance.new("UIStroke")
+    uiStroke.Thickness = 3
+    uiStroke.Color = Color3.fromRGB(190, 90, 255)
+    uiStroke.Transparency = 0.5
+    uiStroke.Parent = popup
+
+    local lines = splitTextToLines(msg, 30)
+    local label = Instance.new("TextLabel")
+    label.Size = UDim2.new(1, -10, 1, -10)
+    label.Position = UDim2.new(0, 5, 0, 5)
+    label.BackgroundTransparency = 1
+    label.Text = icon.." "..lines
+    label.TextColor3 = Color3.fromRGB(255, 255, 255)
+    label.TextSize = 15
+    label.Font = Enum.Font.Fantasy
+    label.TextWrapped = true
+    label.TextXAlignment = Enum.TextXAlignment.Left
+    label.TextYAlignment = Enum.TextYAlignment.Top
+    label.Parent = popup
+
+    local lineCount = select(2, lines:gsub("\n","")) + 1
+    popup.Size = UDim2.new(0, 300, 0, 16*lineCount + 20)
+
+    TweenService:Create(popup, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {
+        Position = UDim2.new(1, -310, 0, 0)
+    }):Play()
+
+    task.delay(duration, function()
+        popup:Destroy()
+    end)
+end
+
+    local mainContainer = Instance.new("Frame")
+    mainContainer.Name = "MainContainer"
+    mainContainer.Size = UDim2.new(0, 380, 0, 450)
+    mainContainer.Position = UDim2.new(0.5, -mainContainer.Size.X.Offset/2, 0.5, -mainContainer.Size.Y.Offset/2)
+    mainContainer.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    mainContainer.BackgroundTransparency = 0
+    mainContainer.BorderSizePixel = 0
+    mainContainer.Parent = screenGui
+    mainContainer.ZIndex = 1
+
+    local backgroundGradient = Instance.new("UIGradient")
+    backgroundGradient.Color = ColorSequence.new({
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(25, 25, 35)),
+        ColorSequenceKeypoint.new(0.5, Color3.fromRGB(30, 30, 45)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(25, 25, 35))
+    })
+    backgroundGradient.Rotation = 45
+    backgroundGradient.Parent = mainContainer
+
+    local mainCorner = Instance.new("UICorner")
+    mainCorner.CornerRadius = UDim.new(0, 12)
+    mainCorner.Parent = mainContainer
+
+    local mainStroke = Instance.new("UIStroke")
+    mainStroke.Name = "MainStroke"
+    mainStroke.Thickness = 3
+    mainStroke.Color = Color3.fromRGB(190, 90, 255)
+    mainStroke.Transparency = 0
+    mainStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+    mainStroke.Parent = mainContainer
+
+    local mainGradient = Instance.new("UIGradient")
+    mainGradient.Color = ColorSequence.new({
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(190, 90, 255)),
+    ColorSequenceKeypoint.new(0.5, Color3.fromRGB(255, 0, 0)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(190, 90, 255))
+})
+mainGradient.Rotation = 0
+mainGradient.Parent = mainStroke
+
+spawn(function()
+    while true do
+        mainGradient.Rotation = (mainGradient.Rotation + 2) % 360
+        task.wait(0.02)
+    end
+end)
+
+    local header = Instance.new("Frame")
+    header.Size = UDim2.new(1, 0, 0, 55)
+    header.Position = UDim2.new(0, 0, 0, 0)
+    header.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+    header.BorderSizePixel = 0
+    header.Parent = mainContainer
+
+    local headerCorner = Instance.new("UICorner")
+    headerCorner.CornerRadius = UDim.new(0, 12)
+    headerCorner.Parent = header
+
+    local headerGradient = Instance.new("UIGradient")
+    headerGradient.Color = ColorSequence.new({
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(70, 70, 70)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(50, 50, 50))
+})
+headerGradient.Rotation = 90
+headerGradient.Parent = header
+
+    local headerCorner = Instance.new("UICorner")
+    headerCorner.CornerRadius = UDim.new(0, 12)
+    headerCorner.Parent = header
+
+    local titleContainer = Instance.new("Frame")
+    titleContainer.Size = UDim2.new(1, -20, 1, 0)
+    titleContainer.Position = UDim2.new(0, 10, 0, 0)
+    titleContainer.BackgroundTransparency = 1
+    titleContainer.Parent = header
+
+    local title = Instance.new("TextLabel")
+    title.Size = UDim2.new(1, -40, 1, 0)
+    title.Position = UDim2.new(0, 15, 0, 0)
+    title.BackgroundTransparency = 1
+    title.Text = "DenKai Joiner"
+    title.TextColor3 = Color3.fromRGB(255, 255, 255)
+    title.TextSize = 20
+    title.Font = Enum.Font.Fantasy
+    title.TextXAlignment = Enum.TextXAlignment.Left
+    title.Parent = titleContainer
+
+    local statusIndicator = Instance.new("Frame")
+    statusIndicator.Size = UDim2.new(0, 10, 0, 10)
+    statusIndicator.Position = UDim2.new(1, -50, 0, 16)
+    statusIndicator.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
+    statusIndicator.BorderSizePixel = 0
+    statusIndicator.Parent = header
+    local statusCorner = Instance.new("UICorner", statusIndicator)
+    statusCorner.CornerRadius = UDim.new(2, 0)
+
+    local contentFrame = Instance.new("Frame")
+    contentFrame.Size = UDim2.new(1, -20, 1, -80)
+    contentFrame.Position = UDim2.new(0, 10, 0, 65)
+    contentFrame.BackgroundTransparency = 1
+    contentFrame.Parent = mainContainer
+    
+local function createDataCard(iconText, titleText, valueText, yPosition)
+    local card = Instance.new("Frame")
+    card.Size = UDim2.new(1, 0, 0, 60)
+    card.Position = UDim2.new(0, 0, 0, yPosition)
+    card.BackgroundColor3 = Color3.fromRGB(15, 15, 25)
+    card.BorderSizePixel = 0
+    card.Parent = contentFrame
+    card.ClipsDescendants = true
+
+    local cardCorner = Instance.new("UICorner")
+    cardCorner.CornerRadius = UDim.new(0, 12)
+    cardCorner.Parent = card
+
+    local cardStroke = Instance.new("UIStroke")
+    cardStroke.Thickness = 1
+    cardStroke.Transparency = 1  
+    cardStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+    cardStroke.Color = Color3.fromRGB(190, 90, 255)
+    cardStroke.Parent = card
+
+    local cardGradient = Instance.new("UIGradient")
+    cardGradient.Color = ColorSequence.new({
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(190, 90, 255)),
+        ColorSequenceKeypoint.new(0.5, Color3.fromRGB(255, 0, 0)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(190, 90, 255))
+    })
+    cardGradient.Rotation = 0
+    cardGradient.Parent = cardStroke
+
+    local iconLabel = Instance.new("TextLabel")
+    iconLabel.Size = UDim2.new(0, 25, 0, 25)
+    iconLabel.Position = UDim2.new(0, 14, 0, 14)
+    iconLabel.BackgroundTransparency = 1
+    iconLabel.Text = iconText
+    iconLabel.TextColor3 = Color3.fromRGB(255, 100, 255)
+    iconLabel.TextSize = 25
+    iconLabel.Font = Enum.Font.GothamBold
+    iconLabel.Parent = card
+
+    local titleLabel = Instance.new("TextLabel")
+    titleLabel.Size = UDim2.new(0.5, -50, 0, 18)
+    titleLabel.Position = UDim2.new(0, 50, 0, 10)
+    titleLabel.BackgroundTransparency = 1
+    titleLabel.Text = titleText
+    titleLabel.TextColor3 = Color3.fromRGB(200, 200, 240)
+    titleLabel.TextSize = 12
+    titleLabel.Font = Enum.Font.Fantasy
+    titleLabel.TextXAlignment = Enum.TextXAlignment.Left
+    titleLabel.Parent = card
+
+    local valueLabel = Instance.new("TextLabel")
+    valueLabel.Size = UDim2.new(1, -60, 0, 25)
+    valueLabel.Position = UDim2.new(0, 50, 0, 25)
+    valueLabel.BackgroundTransparency = 1
+    valueLabel.Text = valueText
+    valueLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    valueLabel.TextSize = 14
+    valueLabel.Font = Enum.Font.Fantasy
+    valueLabel.TextXAlignment = Enum.TextXAlignment.Left
+    valueLabel.TextTruncate = Enum.TextTruncate.AtEnd
+    valueLabel.Parent = card
+
+    local hovering = false
+    local rot = 0
+
+    local renderConnection
+    local function startRotate()
+        renderConnection = game:GetService("RunService").RenderStepped:Connect(function()
+            rot = (rot + 1) % 360
+            cardGradient.Rotation = rot
+            local rot = 0
+            task.wait(0.01)
+        end)
+    end
+
+    local function stopRotate()
+        if renderConnection then
+            renderConnection:Disconnect()
+            renderConnection = nil
+        end
+    end
+
+    card.MouseEnter:Connect(function()
+        hovering = true
+        TweenService:Create(card, TweenInfo.new(0.25, Enum.EasingStyle.Quad), {
+            Size = UDim2.new(1, 8, 0, 65),
+            BackgroundColor3 = Color3.fromRGB(25, 25, 45)
+        }):Play()
+        TweenService:Create(cardStroke, TweenInfo.new(0.25), {Transparency = 0}):Play()
+        startRotate()
+    end)
+
+    card.MouseLeave:Connect(function()
+        hovering = false
+        TweenService:Create(card, TweenInfo.new(0.25, Enum.EasingStyle.Quad), {
+            Size = UDim2.new(1, 0, 0, 60),
+            BackgroundColor3 = Color3.fromRGB(15, 15, 25)
+        }):Play()
+        TweenService:Create(cardStroke, TweenInfo.new(0.25), {Transparency = 1}):Play()
+        stopRotate()
+    end)
+
+    return valueLabel
+end
+
+    local jobIdValue = createDataCard("▢",  "JOB ID", "Waiting...", 0)
+    local petNameValue = createDataCard("▢",  "PET NAME", "Unknown", 70)
+    local moneyValue = createDataCard("▢",  "MONEY/SEC", "$0/sec", 140)
+
+    local actionButton = Instance.new("TextButton")
+    actionButton.Size = UDim2.new(1, 0, 0, 45)
+    actionButton.Position = UDim2.new(0, 0, 0, 210)
+    actionButton.BackgroundColor3 = Color3.fromRGB(255, 60, 60)
+    actionButton.BorderSizePixel = 0
+    actionButton.AutoButtonColor = false
+    actionButton.Text = "🚀 AUTO JOIN (R)"
+    actionButton.Font = Enum.Font.Fantasy
+    actionButton.TextSize = 15
+    actionButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    actionButton.TextStrokeTransparency = 0 
+    actionButton.Parent = contentFrame
+
+    local buttonCorner = Instance.new("UICorner", actionButton)
+    local buttonStroke = Instance.new("UIStroke")
+
+    buttonStroke.Thickness = 1
+    buttonStroke.Color = Color3.fromRGB(20, 20, 20)
+    buttonStroke.Transparency = 0
+    buttonStroke.Parent = actionButton
+
+    local hoverGlow = Instance.new("ImageLabel")
+    hoverGlow.Parent = actionButton
+    hoverGlow.Size = UDim2.new(1, 15, 1, 15)
+    hoverGlow.Position = UDim2.new(0.5, 0, 0.5, 0)
+    hoverGlow.AnchorPoint = Vector2.new(0.5, 0.5)
+    hoverGlow.BackgroundTransparency = 1
+    hoverGlow.Image = "rbxassetid://4996891970"
+    hoverGlow.ImageColor3 = Color3.fromRGB(255, 255, 255)
+    hoverGlow.ImageTransparency = 1
+    hoverGlow.ZIndex = 0
+
+    actionButton.MouseEnter:Connect(function()
+        TweenService:Create(hoverGlow, TweenInfo.new(0.3), {ImageTransparency = 0.7}):Play()
+    end)
+    actionButton.MouseLeave:Connect(function()
+        TweenService:Create(hoverGlow, TweenInfo.new(0.3), {ImageTransparency = 1}):Play()
+    end)
+
+    actionButton.MouseButton1Down:Connect(function()
+        TweenService:Create(actionButton, TweenInfo.new(0.1), {Position = actionButton.Position + UDim2.new(0, 0, 0, 2)}):Play()
+    end)
+    actionButton.MouseButton1Up:Connect(function()
+        TweenService:Create(actionButton, TweenInfo.new(0.1), {Position = UDim2.new(0, 0, 0, 210)}):Play()
+    end)
+
+    local lockButton = Instance.new("TextButton")
+    lockButton.Size = UDim2.new(1, 0, 0, 45)
+    lockButton.Position = UDim2.new(0, 0, 0, 265)
+    lockButton.BackgroundColor3 = Color3.fromRGB(60, 60, 255)
+    lockButton.BorderSizePixel = 0
+    lockButton.AutoButtonColor = false
+    lockButton.Text = "🔓 LOCK JOB ID (X)"
+    lockButton.Font = Enum.Font.Fantasy
+    lockButton.TextSize = 15
+    lockButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    lockButton.Parent = contentFrame
+
+    local lockCorner = Instance.new("UICorner", lockButton)
+    local lockStroke = Instance.new("UIStroke")
+
+    lockStroke.Thickness = 1
+    lockStroke.Color = Color3.fromRGB(20, 20, 20)
+    lockStroke.Transparency = 0
+    lockStroke.Parent = lockButton
+
+    local lockGlow = Instance.new("ImageLabel")
+    lockGlow.Parent = lockButton
+    lockGlow.Size = UDim2.new(1, 15, 1, 15)
+    lockGlow.Position = UDim2.new(0.5, 0, 0.5, 0)
+    lockGlow.AnchorPoint = Vector2.new(0.5, 0.5)
+    lockGlow.BackgroundTransparency = 1
+    lockGlow.Image = "rbxassetid://4996891970"
+    lockGlow.ImageColor3 = Color3.fromRGB(255, 255, 255)
+    lockGlow.ImageTransparency = 1
+    lockGlow.ZIndex = 0
+
+    lockButton.MouseEnter:Connect(function()
+        TweenService:Create(lockGlow, TweenInfo.new(0.3), {ImageTransparency = 0.7}):Play()
+    end)
+    lockButton.MouseLeave:Connect(function()
+        TweenService:Create(lockGlow, TweenInfo.new(0.3), {ImageTransparency = 1}):Play()
+    end)
+
+    lockButton.MouseButton1Down:Connect(function()
+        TweenService:Create(lockButton, TweenInfo.new(0.1), {Position = lockButton.Position + UDim2.new(0, 0, 0, 2)}):Play()
+    end)
+    lockButton.MouseButton1Up:Connect(function()
+        TweenService:Create(lockButton, TweenInfo.new(0.1), {Position = UDim2.new(0, 0, 0, 265)}):Play()
+    end)
+
+    local statusBar = Instance.new("Frame")
+    statusBar.Size = UDim2.new(1, 0, 0, 3)
+    statusBar.Position = UDim2.new(0, 0, 1, -1)
+    statusBar.BackgroundColor3 = Color3.fromRGB(200, 60, 60)
+    statusBar.BorderSizePixel = 0
+    statusBar.Parent = contentFrame
+    Instance.new("UICorner", statusBar)
+
+    local statusText = Instance.new("TextLabel")
+    statusText.Size = UDim2.new(1, 0, 0, 25)
+    statusText.Position = UDim2.new(0, 0, 0, 315)
+    statusText.BackgroundTransparency = 1
+    statusText.Text = "🚀 Press T For Gui"
+    statusText.TextColor3 = Color3.fromRGB(200, 200, 220)
+    statusText.TextSize = 10
+    statusText.Font = Enum.Font.Fantasy
+    statusText.Parent = contentFrame
+
+    local closeButton = Instance.new("TextButton")
+    closeButton.Size = UDim2.new(0, 20, 0, 20)
+    closeButton.Position = UDim2.new(1, -30, 0, 10)
+    closeButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+    closeButton.BorderSizePixel = 0
+    closeButton.Text = "×"
+    closeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    closeButton.TextSize = 20
+    closeButton.Font = Enum.Font.GothamBold
+    closeButton.Parent = header
+    Instance.new("UICorner", closeButton)
+
+    local dragging = false
+    local dragInput, mouseStart, frameStart
+
+    local function startDrag(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            dragging = true
+            mouseStart = input.Position
+            frameStart = mainContainer.Position
+
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then
+                    dragging = false
+                end
+            end)
+        end
+    end
+
+    local function updateDrag(input)
+        if input.UserInputType == Enum.UserInputType.MouseMovement and dragging then
+            local delta = input.Position - mouseStart
+            mainContainer.Position = UDim2.new(
+                frameStart.X.Scale, frameStart.X.Offset + delta.X,
+                frameStart.Y.Scale, frameStart.Y.Offset + delta.Y
+            )
+        end
+    end
+
+    header.InputBegan:Connect(startDrag)
+    header.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseMovement then
+            dragInput = input
+        end
+    end)
+    UserInputService.InputChanged:Connect(updateDrag)
+
+local guiVisible = true 
+
+local function toggleGUI()
+    guiVisible = not guiVisible
+
+    if guiVisible then
+        mainContainer.Visible = true
+        mainContainer.Size = UDim2.new(0, 0, 0, 0)  
+        mainContainer.Position = UDim2.new(0.5, 0, 0.5, 0)
+        mainContainer.BackgroundTransparency = 1
+
+        TweenService:Create(mainContainer, TweenInfo.new(0.35, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+            Size = UDim2.new(0, 380, 0, 450),
+            Position = UDim2.new(0.5, -380/2, 0.5, -450/2),
+            BackgroundTransparency = 0
+        }):Play()
+
+        statusText.Text = "🚀 Gui Visible"
+    else
+        local tweenOut = TweenService:Create(mainContainer, TweenInfo.new(0.25, Enum.EasingStyle.Back, Enum.EasingDirection.In), {
+            Size = UDim2.new(0, 0, 0, 0),
+            Position = UDim2.new(0.5, 0, 0.5, 0),
+            BackgroundTransparency = 1
+        })
+        tweenOut:Play()
+        tweenOut.Completed:Connect(function()
+            mainContainer.Visible = false
+        end)
+
+        statusText.Text = "🚀 Gui Hidden"
+    end
+end
+
+    local function setStatus(isConn, txt)
+        connected = isConn
+        if guiVisible then
+            statusText.Text = txt or (isConn and "🚀 Auto Mode - Connected" or "❌  Auto Mode - Disconnected")
+        end
+
+        local color = isConn and Color3.fromRGB(80, 255, 120) or Color3.fromRGB(255, 80, 80)
+        TweenService:Create(statusIndicator, TweenInfo.new(0.3), {BackgroundColor3 = color}):Play()
+        TweenService:Create(statusBar, TweenInfo.new(0.3), {BackgroundColor3 = color}):Play()
+    end
+
+    local lockJobID = false
+
+    local function toggleLockJobID()
+    lockJobID = not lockJobID
+    if lockJobID then
+        lockButton.Text = "🔒 LOCK JOB ID ON (X)"
+        lockButton.BackgroundColor3 = Color3.fromRGB(255, 255, 100)
+        lockButton.TextColor3 = Color3.fromRGB(20, 20, 20)
+        statusText.Text = guiVisible and "🔒 Locked JobId" or statusText.Text
+    else
+        lockButton.Text = "🔓 LOCK JOB ID (X)"
+        lockButton.BackgroundColor3 = Color3.fromRGB(60, 60, 255)
+        lockButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+        statusText.Text = guiVisible and "🔓 Unlocked JobId - Press X" or statusText.Text
+        
+        if currentData then
+            jobIdValue.Text = tostring(currentData.jobid or "N/A")
+            petNameValue.Text = tostring(currentData.name or "Unknown")
+            local money = tonumber(currentData.money) or 0
+            if money >= 1e9 then
+                moneyValue.Text = string.format("$%.2fB/sec", money / 1e9)
+            elseif money >= 1e6 then
+                moneyValue.Text = string.format("$%.2fM/sec", money / 1e6)
+            elseif money >= 1e3 then
+                moneyValue.Text = string.format("$%.2fK/sec", money / 1e3)
+            else
+                moneyValue.Text = string.format("$%d/sec", money)
+            end
+        end
+    end
+end
+
+lockButton.MouseButton1Click:Connect(toggleLockJobID)
+    
+local function parseMoneyInput(value)
+	local s = tostring(value or ""):gsub("%s+", "")
+	if s == "" then return 0 end
+	local up = s:upper()
+	local numPart, suffix = up:match("^([%d%.]+)%s*([KMB]?)$")
+	local n = tonumber(numPart)
+	if not n then
+		local digits = tostring(s):match("(%d+)")
+		n = tonumber(digits) or 0
+		suffix = up:match("[KMB]") or ""
+	end
+	local mult = 1
+	if suffix == "K" then mult = 1e3
+	elseif suffix == "M" then mult = 1e6
+	elseif suffix == "B" then mult = 1e9 end
+	return n * mult
+end
+
+local function formatMoney(val)
+	if val >= 1e9 then
+		return string.format("$%.1fB/s", val / 1e9)
+	elseif val >= 1e6 then
+		return string.format("$%.1fM/s", val / 1e6)
+	elseif val >= 1e3 then
+		return string.format("$%.1fK/s", val / 1e3)
+	else
+		return "$" .. val .. "/s"
+	end
+end
+
+_G.minMoneyFilter = 1
+
+local moneyFilterLabel = Instance.new("TextLabel")
+moneyFilterLabel.Parent = contentFrame
+moneyFilterLabel.BackgroundTransparency = 1
+moneyFilterLabel.Text = "Min Money/Sec"
+moneyFilterLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+moneyFilterLabel.Font = Enum.Font.Fantasy
+moneyFilterLabel.TextSize = 13
+moneyFilterLabel.Size = UDim2.new(1, -20, 0, 18)
+moneyFilterLabel.Position = UDim2.new(0, 10, 0, 315)
+moneyFilterLabel.TextXAlignment = Enum.TextXAlignment.Left
+
+local boxWidth = 0.45
+local buttonWidth = 0.35
+local boxHeight = 28
+local boxY = 338
+local spacing = 0.05
+
+local moneyFilterBox = Instance.new("TextBox")
+moneyFilterBox.Parent = contentFrame
+moneyFilterBox.Text = "1M"
+moneyFilterBox.PlaceholderText = ""
+moneyFilterBox.Font = Enum.Font.Fantasy
+moneyFilterBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+moneyFilterBox.PlaceholderColor3 = Color3.fromRGB(0, 0, 0)
+moneyFilterBox.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+moneyFilterBox.BackgroundTransparency = 0.1
+moneyFilterBox.BorderSizePixel = 0
+moneyFilterBox.Size = UDim2.new(boxWidth, 0, 0, boxHeight)
+moneyFilterBox.Position = UDim2.new(0.5 - boxWidth - spacing/2, 0, 0, boxY)
+moneyFilterBox.TextXAlignment = Enum.TextXAlignment.Center
+moneyFilterBox.TextSize = 15
+moneyFilterBox.ClearTextOnFocus = false
+
+local corner = Instance.new("UICorner", moneyFilterBox)
+corner.CornerRadius = UDim.new(0, 8)
+
+local applyMoneyFilter = Instance.new("TextButton")
+applyMoneyFilter.Parent = contentFrame
+applyMoneyFilter.Text = "APPLY"
+applyMoneyFilter.Font = Enum.Font.Fantasy
+applyMoneyFilter.TextColor3 = Color3.fromRGB(255, 255, 255)
+applyMoneyFilter.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+applyMoneyFilter.BackgroundTransparency = 0.1
+applyMoneyFilter.BorderSizePixel = 0
+applyMoneyFilter.TextSize = 15
+applyMoneyFilter.AutoButtonColor = false
+applyMoneyFilter.Size = UDim2.new(buttonWidth, 0, 0, boxHeight)
+applyMoneyFilter.Position = UDim2.new(0.5 + spacing/2, 0, 0, boxY)
+
+local corner2 = Instance.new("UICorner", applyMoneyFilter)
+corner2.CornerRadius = UDim.new(0, 8)
+
+local stroke2 = Instance.new("UIStroke", applyMoneyFilter)
+stroke2.Thickness = 1
+stroke2.Transparency = 0.1
+stroke2.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+stroke2.Color = Color3.fromRGB(190, 90, 255)
+
+local gradientApply = Instance.new("UIGradient", stroke2)
+gradientApply.Color = ColorSequence.new({
+	ColorSequenceKeypoint.new(0, Color3.fromRGB(190, 90, 255)),
+	ColorSequenceKeypoint.new(0.5, Color3.fromRGB(255, 0, 0)),
+	ColorSequenceKeypoint.new(1, Color3.fromRGB(190, 90, 255))
+})
+gradientApply.Rotation = 0
+
+applyMoneyFilter.MouseEnter:Connect(function()
+	TweenService:Create(applyMoneyFilter, TweenInfo.new(0.5), {
+		BackgroundColor3 = Color3.fromRGB(35, 0, 80)
+	}):Play()
+	TweenService:Create(stroke2, TweenInfo.new(0.5), {Thickness = 2.5}):Play()
+end)
+
+applyMoneyFilter.MouseLeave:Connect(function()
+	TweenService:Create(applyMoneyFilter, TweenInfo.new(0.5), {
+		BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+	}):Play()
+	TweenService:Create(stroke2, TweenInfo.new(0.5), {Thickness = 1}):Play()
+end)
+
+applyMoneyFilter.MouseButton1Click:Connect(function()
+	TweenService:Create(applyMoneyFilter, TweenInfo.new(0.1), {
+		Position = UDim2.new(0.5 + spacing/2, 0, 0, boxY + 2)
+	}):Play()
+	task.wait(0.1)
+	TweenService:Create(applyMoneyFilter, TweenInfo.new(0.2), {
+		Position = UDim2.new(0.5 + spacing/2, 0, 0, boxY)
+	}):Play()
+
+	local val = parseMoneyInput(moneyFilterBox.Text)
+	if val > 0 then
+		_G.minMoneyFilter = val
+		moneyFilterLabel.Text = "Min " .. formatMoney(val)
+	end
+end)
+
+task.spawn(function()
+	while task.wait(0.01) do
+		gradientApply.Rotation = (gradientApply.Rotation + 2) % 360
+	end
+end)
+
+local function updateDisplay(data)
+	if not data then return end
+
+	local money = tonumber(data.money) or 0
+	if money < (_G.minMoneyFilter or 1) then
+		return
+	end
+
+	if not lockJobID then
+		jobIdValue.Text = tostring(data.jobid or "N/A")
+	end
+
+	petNameValue.Text = tostring(data.name or "Unknown")
+
+	if money >= 1e9 then
+		moneyValue.Text = string.format("$%.2fB/sec", money / 1e9)
+	elseif money >= 1e6 then
+		moneyValue.Text = string.format("$%.2fM/sec", money / 1e6)
+	elseif money >= 1e3 then
+		moneyValue.Text = string.format("$%.2fK/sec", money / 1e3)
+	else
+		moneyValue.Text = string.format("$%d/sec", money)
+	end
+
+	currentData = data
+end
+
+    local function findWebsocketConnector()
+        local connectors = {
+            function() return WebSocket and WebSocket.connect end,
+            function() return syn and syn.websocket and syn.websocket.connect end,
+            function() return websocket and websocket.connect end,
+        }
+
+        for _, connectorFunc in ipairs(connectors) do
+            local success, connector = pcall(connectorFunc)
+            if success and connector then return connector end
+        end
+        return nil
+    end
+
+    local function tryConnectAll()
+        local connector = findWebsocketConnector()
+        if not connector then
+            setStatus(false, "❌ WebSocket API unavailable")
+            return nil, "no_ws_api"
+        end
+
+        for _, host in ipairs(HOSTS) do
+            local success, socket = pcall(function() return connector(host) end)
+            if success and socket then
+                setStatus(true, "Connected")
+                return socket, host
+            end
+        end
+        return nil, "all_failed"
+    end
+
+    local function attachSocket(socket, host)
+        if not socket then return end
+        ws = socket
+
+        if socket.OnMessage then
+            socket.OnMessage:Connect(function(message)
+                local success, data = pcall(function() return HttpService:JSONDecode(message) end)
+                if success and data then
+                    if not lockJobID then
+                        currentData = data
+                        updateDisplay(data)
+                    else
+                        currentData = data
+                    end
+                end
+            end)
+        end
+
+        if socket.OnClose then
+            socket.OnClose:Connect(function()
+                setStatus(false, "❌ Connection closed")
+                ws = nil
+                if AUTO_RETRY then
+                    task.wait(RECONNECT_DELAY)
+                    spawn(connectLoop)
+                end
+            end)
+        end
+    end
+
+    function connectLoop()
+        local now = tick()
+        if now - lastConnectAttempt < 2 then
+            task.wait(2 - (now - lastConnectAttempt))
+        end
+        lastConnectAttempt = tick()
+
+        setStatus(false, "🔄 Connecting...")
+
+        while true do
+            local socket, host = tryConnectAll()
+            if socket then
+                attachSocket(socket, host)
+                break
+            end
+            task.wait(RECONNECT_DELAY)
+        end
+    end
+
+    local function ultraSafeInteractWithChilliHub()
+        if not currentData or not currentData.jobid then
+            return false, "No Job Id Data"
+        end
+
+        ultraFindGUI()
+        if not textbox or not button then
+            return false, "Chilli Hub Not Found"
+        end
+
+        local success = ultraCheckjobid(currentData.jobid)
+        return success, success and "AUTO Processed" or "ULTRA Failed"
+    end
+
+    local function toggleAutoJoiner()
+        autoJoinEnabled = not autoJoinEnabled
+        actionButton.AutoButtonColor = false
+
+        if autoJoinEnabled then
+            actionButton.Text = "⏸️ AUTO JOIN ON (R)"
+            if guiVisible then
+                statusText.Text = "⏸️ Auto Joiner - Filter Active"
+                createPopup("Success Join JobId: "..tostring(currentData.jobid), "⚙️", 3)
+            end
+            actionButton.BackgroundColor3 = Color3.fromRGB(120, 255, 120)
+            actionButton.TextColor3 = Color3.fromRGB(25, 25, 25)
+            TweenService:Create(actionButton, TweenInfo.new(0.25, Enum.EasingStyle.Quad), {
+                BackgroundColor3 = Color3.fromRGB(120, 255, 120)
+            }):Play()
+        else
+            actionButton.Text = "🚀 AUTO JOIN (R)"
+            if guiVisible then
+                statusText.Text = "🚀 Auto Joiner - Press R"
+                createPopup("Failed Join JobId: " .. tostring(currentData.jobid), "❌", 3)
+            end
+            actionButton.BackgroundColor3 = Color3.fromRGB(255, 60, 60)
+            actionButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+            TweenService:Create(actionButton, TweenInfo.new(0.25, Enum.EasingStyle.Quad), {
+                BackgroundColor3 = Color3.fromRGB(255, 60, 60)
+            }):Play()
+        end
+    end
+
+    actionButton.MouseButton1Click:Connect(toggleAutoJoiner)
+
+local toggleButtonHolder = Instance.new("Frame")
+toggleButtonHolder.Name = "ToggleButtonHolder"
+toggleButtonHolder.Size = UDim2.new(0, 74, 0, 44)
+toggleButtonHolder.Position = UDim2.new(0, 18, 0, 58) 
+toggleButtonHolder.BackgroundTransparency = 1
+toggleButtonHolder.Parent = screenGui
+
+local border = Instance.new("Frame")
+border.Size = UDim2.new(1, 0, 1, 0)
+border.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+border.Parent = toggleButtonHolder
+
+local borderCorner = Instance.new("UICorner")
+borderCorner.CornerRadius = UDim.new(0, 12)
+borderCorner.Parent = border
+
+local gradient = Instance.new("UIGradient")
+gradient.Color = ColorSequence.new{
+	ColorSequenceKeypoint.new(0, Color3.fromRGB(190, 90, 255)),
+	ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 0, 0))
+}
+gradient.Rotation = 0
+gradient.Parent = border
+
+task.spawn(function()
+	while task.wait(0.02) do
+		gradient.Rotation = (gradient.Rotation + 1) % 360
+	end
+end)
+
+local toggleButton = Instance.new("TextButton")
+toggleButton.Name = "ToggleMenuButton"
+toggleButton.Size = UDim2.new(1, -4, 1, -4)
+toggleButton.Position = UDim2.new(0, 2, 0, 2)
+toggleButton.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+toggleButton.Text = "DK"
+toggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+toggleButton.TextSize = 20
+toggleButton.Font = Enum.Font.GothamBold
+toggleButton.BorderSizePixel = 0
+toggleButton.AutoButtonColor = false
+toggleButton.Parent = toggleButtonHolder
+
+local buttonCorner = Instance.new("UICorner")
+buttonCorner.CornerRadius = UDim.new(0, 10)
+buttonCorner.Parent = toggleButton
+
+toggleButton.MouseEnter:Connect(function()
+	TweenService:Create(toggleButton, TweenInfo.new(0.25), {
+		BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+	}):Play()
+end)
+toggleButton.MouseLeave:Connect(function()
+	TweenService:Create(toggleButton, TweenInfo.new(0.25), {
+		BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+	}):Play()
+end)
+
+toggleButton.MouseButton1Click:Connect(function()
+	toggleGUI()
+end)
+
+local UserInputService = game:GetService("UserInputService")
+local dragging, dragStart, startPos
+
+local function updateDrag(input)
+	local delta = input.Position - dragStart
+	toggleButtonHolder.Position = UDim2.new(
+		startPos.X.Scale,
+		startPos.X.Offset + delta.X,
+		startPos.Y.Scale,
+		startPos.Y.Offset + delta.Y
+	)
+end
+
+toggleButton.InputBegan:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1 then
+		dragging = true
+		dragStart = input.Position
+		startPos = toggleButtonHolder.Position
+	end
+end)
+
+toggleButton.InputChanged:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseMovement then
+		UserInputService.InputChanged:Connect(function(moveInput)
+			if dragging and moveInput.UserInputType == Enum.UserInputType.MouseMovement then
+				updateDrag(moveInput)
+			end
+		end)
+	end
+end)
+
+UserInputService.InputEnded:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1 then
+		dragging = false
+	end
+end)
+
+    local keyConnection
+    local function setupKeyListeners()
+        if keyConnection then
+            keyConnection:Disconnect()
+        end
+
+        keyConnection = UserInputService.InputBegan:Connect(function(input, gameProcessed)
+            if gameProcessed then return end
+
+            if input.KeyCode == Enum.KeyCode.T then
+                toggleGUI()
+
+            elseif input.KeyCode == Enum.KeyCode.R then
+                toggleAutoJoiner()
+
+                pcall(function()
+                    TweenService:Create(actionButton, TweenInfo.new(0.1), {
+                        Size = UDim2.new(1, -5, 0, 43)
+                    }):Play()
+                end)
+
+                task.wait(0.05)
+
+                pcall(function()
+                    TweenService:Create(actionButton, TweenInfo.new(0.1), {
+                        Size = UDim2.new(1, 0, 0, 45)
+                    }):Play()
+                end)
+
+            elseif input.KeyCode == Enum.KeyCode.X then
+                toggleLockJobID()
+
+                pcall(function()
+                    TweenService:Create(lockButton, TweenInfo.new(0.1), {
+                        Size = UDim2.new(1, -5, 0, 43)
+                    }):Play()
+                end)
+
+                task.wait(0.05)
+
+                pcall(function()
+                    TweenService:Create(lockButton, TweenInfo.new(0.1), {
+                        Size = UDim2.new(1, 0, 0, 45)
+                    }):Play()
+                end)
+            end
+        end)
+    end
+
+    closeButton.MouseButton1Click:Connect(function()
+        screenGui:Destroy()
+        if keyConnection then
+            keyConnection:Disconnect()
+        end
+    end)
+
+spawn(function()
+    while true do
+        if autoJoinEnabled then
+            local targetJobId
+
+            if lockJobID and lockedJobID then
+                targetJobId = lockedJobID
+            elseif currentData and currentData.jobid then
+                targetJobId = currentData.jobid
+            end
+
+            if targetJobId then
+                local currentTime = tick()
+                if currentTime - lastProcessTime >= PROCESS_DELAY then
+                    lastProcessTime = currentTime
+                    local success = ultraCheckjobid(targetJobId)
+                    if guiVisible and statusText then
+                        if success then
+                            if lockJobID then
+                                statusText.Text = "🔒 Locked Join JobId"
+                                createPopup("Success Locked JobId: " .. tostring(targetJobId), "🔒", 3)
+                            else
+                                statusText.Text = "🚀 Auto Joiner Job Id"
+                                createPopup("Success Join JobId: " .. tostring(targetJobId), "⚙️", 3)
+                            end
+                        else
+                            statusText.Text = "❌ Failed To Join Job Id"
+                        end
+                    end
+                end
+            elseif guiVisible and statusText then
+                statusText.Text = "⏳ Waiting For Job Id..."
+            end
+        end
+        RunService.Heartbeat:Wait()
+    end
+end)
+
+    setupKeyListeners()
+    spawn(function()
+        task.wait()
+        connectLoop()
+    end)
+
+    game:GetService("Players").PlayerRemoving:Connect(function(leavingPlayer)
+        if leavingPlayer == player then
+            if keyConnection then
+                keyConnection:Disconnect()
+            end
+        end
+    end)
+end)
