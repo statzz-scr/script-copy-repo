@@ -1,0 +1,521 @@
+-- ========================================
+-- SCRIPT 66 - STEAL A BRAINROT
+-- Working Features Only
+-- ========================================
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local Workspace = game:GetService("Workspace")
+local player = Players.LocalPlayer
+local camera = Workspace.CurrentCamera
+
+-- Wait for character
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoid = character:WaitForChild("Humanoid")
+local rootPart = character:WaitForChild("HumanoidRootPart")
+
+-- Update character on respawn
+player.CharacterAdded:Connect(function(char)
+    character = char
+    humanoid = char:WaitForChild("Humanoid")
+    rootPart = char:WaitForChild("HumanoidRootPart")
+end)
+
+-- Settings
+local settings = {
+    speedBoost = false,
+    speedValue = 50,
+    antiRagdoll = false,
+    infinityJump = false,
+    noClip = false,
+    espPlayers = false,
+    espBrainrots = false,
+    fullbright = false,
+    baseTransparency = false,
+    flySpeed = 50,
+    flying = false
+}
+
+-- ESP Storage
+local espObjects = {}
+
+-- ========================================
+-- CREATE GUI
+-- ========================================
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "Script66GUI"
+screenGui.ResetOnSpawn = false
+screenGui.Parent = player:WaitForChild("PlayerGui")
+
+local mainFrame = Instance.new("Frame")
+mainFrame.Size = UDim2.new(0, 280, 0, 420)
+mainFrame.Position = UDim2.new(0, 20, 0.5, -210)
+mainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
+mainFrame.BorderSizePixel = 0
+mainFrame.Parent = screenGui
+
+local stroke = Instance.new("UIStroke")
+stroke.Color = Color3.fromRGB(100, 100, 255)
+stroke.Thickness = 2
+stroke.Parent = mainFrame
+
+local corner = Instance.new("UICorner")
+corner.CornerRadius = UDim.new(0, 10)
+corner.Parent = mainFrame
+
+-- Dragging
+local dragging = false
+local dragInput, mousePos, framePos
+
+mainFrame.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = true
+        mousePos = input.Position
+        framePos = mainFrame.Position
+    end
+end)
+
+mainFrame.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = false
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+        local delta = input.Position - mousePos
+        mainFrame.Position = UDim2.new(
+            framePos.X.Scale, framePos.X.Offset + delta.X,
+            framePos.Y.Scale, framePos.Y.Offset + delta.Y
+        )
+    end
+end)
+
+-- Title
+local title = Instance.new("TextLabel")
+title.Size = UDim2.new(1, 0, 0, 40)
+title.BackgroundTransparency = 1
+title.Text = "SCRIPT 66"
+title.TextColor3 = Color3.fromRGB(100, 100, 255)
+title.TextSize = 18
+title.Font = Enum.Font.GothamBold
+title.Parent = mainFrame
+
+-- Scroll Frame
+local scrollFrame = Instance.new("ScrollingFrame")
+scrollFrame.Size = UDim2.new(1, -20, 1, -50)
+scrollFrame.Position = UDim2.new(0, 10, 0, 45)
+scrollFrame.BackgroundTransparency = 1
+scrollFrame.BorderSizePixel = 0
+scrollFrame.ScrollBarThickness = 6
+scrollFrame.Parent = mainFrame
+
+local listLayout = Instance.new("UIListLayout")
+listLayout.Padding = UDim.new(0, 5)
+listLayout.Parent = scrollFrame
+
+-- ========================================
+-- BUTTON FUNCTIONS
+-- ========================================
+
+local function createButton(text, callback, isToggle)
+    local button = Instance.new("TextButton")
+    button.Size = UDim2.new(1, -10, 0, 35)
+    button.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+    button.Text = text
+    button.TextColor3 = Color3.fromRGB(255, 255, 255)
+    button.TextSize = 11
+    button.Font = Enum.Font.Gotham
+    button.BorderSizePixel = 0
+    button.Parent = scrollFrame
+    
+    local buttonCorner = Instance.new("UICorner")
+    buttonCorner.CornerRadius = UDim.new(0, 6)
+    buttonCorner.Parent = button
+    
+    if isToggle then
+        button.MouseButton1Click:Connect(function()
+            local isEnabled = callback()
+            if isEnabled then
+                button.BackgroundColor3 = Color3.fromRGB(50, 150, 50)
+                button.Text = text .. ": ON"
+            else
+                button.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+                button.Text = text .. ": OFF"
+            end
+        end)
+    else
+        button.MouseButton1Click:Connect(callback)
+    end
+    
+    return button
+end
+
+local function createLabel(text)
+    local label = Instance.new("TextLabel")
+    label.Size = UDim2.new(1, -10, 0, 25)
+    label.BackgroundColor3 = Color3.fromRGB(50, 50, 70)
+    label.Text = text
+    label.TextColor3 = Color3.fromRGB(200, 200, 255)
+    label.TextSize = 13
+    label.Font = Enum.Font.GothamBold
+    label.BorderSizePixel = 0
+    label.Parent = scrollFrame
+    
+    local labelCorner = Instance.new("UICorner")
+    labelCorner.CornerRadius = UDim.new(0, 6)
+    labelCorner.Parent = label
+end
+
+-- ========================================
+-- MOVEMENT FEATURES
+-- ========================================
+
+createLabel("=== MOVEMENT ===")
+
+-- Speed Boost
+createButton("Speed Boost", function()
+    settings.speedBoost = not settings.speedBoost
+    if settings.speedBoost then
+        humanoid.WalkSpeed = settings.speedValue
+    else
+        humanoid.WalkSpeed = 16
+    end
+    return settings.speedBoost
+end, true)
+
+-- Infinity Jump
+createButton("Infinity Jump", function()
+    settings.infinityJump = not settings.infinityJump
+    return settings.infinityJump
+end, true)
+
+-- Fly
+createButton("Fly (E to toggle)", function()
+    settings.flying = not settings.flying
+    return settings.flying
+end, true)
+
+-- NoClip
+createButton("NoClip (Hold Q)", function()
+    settings.noClip = not settings.noClip
+    return settings.noClip
+end, true)
+
+-- ========================================
+-- COMBAT FEATURES
+-- ========================================
+
+createLabel("=== COMBAT ===")
+
+-- Anti Ragdoll
+createButton("Anti Ragdoll", function()
+    settings.antiRagdoll = not settings.antiRagdoll
+    return settings.antiRagdoll
+end, true)
+
+-- ========================================
+-- VISUAL FEATURES
+-- ========================================
+
+createLabel("=== VISUAL ===")
+
+-- Fullbright
+createButton("Fullbright", function()
+    settings.fullbright = not settings.fullbright
+    if settings.fullbright then
+        game.Lighting.Brightness = 2
+        game.Lighting.ClockTime = 14
+        game.Lighting.FogEnd = 100000
+        game.Lighting.GlobalShadows = false
+        game.Lighting.OutdoorAmbient = Color3.fromRGB(128, 128, 128)
+    else
+        game.Lighting.Brightness = 1
+        game.Lighting.ClockTime = 12
+        game.Lighting.FogEnd = 10000
+        game.Lighting.GlobalShadows = true
+    end
+    return settings.fullbright
+end, true)
+
+-- Base Transparency
+createButton("Base Transparency", function()
+    settings.baseTransparency = not settings.baseTransparency
+    for _, obj in pairs(Workspace:GetDescendants()) do
+        if obj:IsA("BasePart") and obj.Parent.Name:find("Base") then
+            if settings.baseTransparency then
+                obj.Transparency = 0.9
+            else
+                obj.Transparency = 0
+            end
+        end
+    end
+    return settings.baseTransparency
+end, true)
+
+-- Player ESP
+createButton("Player ESP", function()
+    settings.espPlayers = not settings.espPlayers
+    if not settings.espPlayers then
+        for _, esp in pairs(espObjects) do
+            if esp then esp:Destroy() end
+        end
+        espObjects = {}
+    end
+    return settings.espPlayers
+end, true)
+
+-- Brainrot ESP
+createButton("Brainrot ESP", function()
+    settings.espBrainrots = not settings.espBrainrots
+    return settings.espBrainrots
+end, true)
+
+-- ========================================
+-- UTILITY
+-- ========================================
+
+createLabel("=== UTILITY ===")
+
+-- Rejoin
+createButton("Rejoin Server", function()
+    game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId, game.JobId, player)
+end, false)
+
+-- Server Hop
+createButton("Server Hop", function()
+    local HttpService = game:GetService("HttpService")
+    local success, servers = pcall(function()
+        return HttpService:JSONDecode(game:HttpGet(
+            "https://games.roblox.com/v1/games/"..game.PlaceId.."/servers/Public?sortOrder=Desc&limit=100"
+        ))
+    end)
+    
+    if success and servers.data then
+        for _, server in pairs(servers.data) do
+            if server.id ~= game.JobId then
+                game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId, server.id, player)
+                break
+            end
+        end
+    end
+end, false)
+
+-- Close GUI
+createButton("Close GUI", function()
+    screenGui:Destroy()
+end, false)
+
+-- ========================================
+-- MAIN LOOPS
+-- ========================================
+
+-- Anti Ragdoll
+RunService.Heartbeat:Connect(function()
+    if settings.antiRagdoll and character then
+        for _, v in pairs(character:GetDescendants()) do
+            if v:IsA("BasePart") then
+                v.CanCollide = false
+            end
+        end
+        if humanoid.Sit then
+            humanoid.Sit = false
+        end
+    end
+end)
+
+-- Speed Boost Maintain
+task.spawn(function()
+    while task.wait(0.1) do
+        if settings.speedBoost and humanoid then
+            humanoid.WalkSpeed = settings.speedValue
+        end
+    end
+end)
+
+-- Player ESP Loop
+RunService.RenderStepped:Connect(function()
+    if settings.espPlayers then
+        for _, otherPlayer in pairs(Players:GetPlayers()) do
+            if otherPlayer ~= player and otherPlayer.Character and otherPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                local hrp = otherPlayer.Character.HumanoidRootPart
+                
+                if not espObjects[otherPlayer.UserId] then
+                    local billboard = Instance.new("BillboardGui")
+                    billboard.Name = "ESP_"..otherPlayer.Name
+                    billboard.Adornee = hrp
+                    billboard.Size = UDim2.new(0, 100, 0, 50)
+                    billboard.StudsOffset = Vector3.new(0, 3, 0)
+                    billboard.AlwaysOnTop = true
+                    billboard.Parent = hrp
+                    
+                    local nameLabel = Instance.new("TextLabel")
+                    nameLabel.Size = UDim2.new(1, 0, 0.5, 0)
+                    nameLabel.BackgroundTransparency = 1
+                    nameLabel.Text = otherPlayer.Name
+                    nameLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+                    nameLabel.TextStrokeTransparency = 0
+                    nameLabel.TextSize = 14
+                    nameLabel.Font = Enum.Font.GothamBold
+                    nameLabel.Parent = billboard
+                    
+                    local distLabel = Instance.new("TextLabel")
+                    distLabel.Size = UDim2.new(1, 0, 0.5, 0)
+                    distLabel.Position = UDim2.new(0, 0, 0.5, 0)
+                    distLabel.BackgroundTransparency = 1
+                    distLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+                    distLabel.TextStrokeTransparency = 0
+                    distLabel.TextSize = 12
+                    distLabel.Font = Enum.Font.Gotham
+                    distLabel.Parent = billboard
+                    
+                    espObjects[otherPlayer.UserId] = billboard
+                end
+                
+                -- Update distance
+                if espObjects[otherPlayer.UserId] then
+                    local distance = (hrp.Position - rootPart.Position).Magnitude
+                    local distLabel = espObjects[otherPlayer.UserId]:FindFirstChild("TextLabel") and espObjects[otherPlayer.UserId]:FindFirstChild("TextLabel").Parent:FindFirstChild("TextLabel", true)
+                    if distLabel then
+                        espObjects[otherPlayer.UserId]:FindFirstChildWhichIsA("TextLabel", true).NextSibling.Text = math.floor(distance).." studs"
+                    end
+                end
+            end
+        end
+    end
+end)
+
+-- Brainrot ESP Loop
+RunService.RenderStepped:Connect(function()
+    if settings.espBrainrots then
+        for _, obj in pairs(Workspace:GetDescendants()) do
+            if obj:IsA("Model") and (obj.Name:find("Brainrot") or obj.Name:find("Brain")) then
+                if not obj:FindFirstChild("BrainrotESP") then
+                    local highlight = Instance.new("Highlight")
+                    highlight.Name = "BrainrotESP"
+                    highlight.FillColor = Color3.fromRGB(255, 215, 0)
+                    highlight.OutlineColor = Color3.fromRGB(255, 255, 0)
+                    highlight.FillTransparency = 0.5
+                    highlight.OutlineTransparency = 0
+                    highlight.Parent = obj
+                end
+            end
+        end
+    else
+        for _, obj in pairs(Workspace:GetDescendants()) do
+            if obj:IsA("Highlight") and obj.Name == "BrainrotESP" then
+                obj:Destroy()
+            end
+        end
+    end
+end)
+
+-- Fly System
+local flyConnection
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+    if gameProcessed then return end
+    
+    -- E to toggle fly
+    if input.KeyCode == Enum.KeyCode.E then
+        settings.flying = not settings.flying
+        
+        if settings.flying then
+            local bodyVelocity = Instance.new("BodyVelocity")
+            bodyVelocity.Name = "FlyVelocity"
+            bodyVelocity.MaxForce = Vector3.new(9e9, 9e9, 9e9)
+            bodyVelocity.Velocity = Vector3.new(0, 0, 0)
+            bodyVelocity.Parent = rootPart
+            
+            local bodyGyro = Instance.new("BodyGyro")
+            bodyGyro.Name = "FlyGyro"
+            bodyGyro.MaxTorque = Vector3.new(9e9, 9e9, 9e9)
+            bodyGyro.P = 9e4
+            bodyGyro.Parent = rootPart
+            
+            flyConnection = RunService.RenderStepped:Connect(function()
+                if not settings.flying then
+                    if flyConnection then flyConnection:Disconnect() end
+                    if rootPart:FindFirstChild("FlyVelocity") then rootPart.FlyVelocity:Destroy() end
+                    if rootPart:FindFirstChild("FlyGyro") then rootPart.FlyGyro:Destroy() end
+                    return
+                end
+                
+                local velocity = Vector3.new(0, 0, 0)
+                
+                if UserInputService:IsKeyDown(Enum.KeyCode.W) then
+                    velocity = velocity + (camera.CFrame.LookVector * settings.flySpeed)
+                end
+                if UserInputService:IsKeyDown(Enum.KeyCode.S) then
+                    velocity = velocity - (camera.CFrame.LookVector * settings.flySpeed)
+                end
+                if UserInputService:IsKeyDown(Enum.KeyCode.A) then
+                    velocity = velocity - (camera.CFrame.RightVector * settings.flySpeed)
+                end
+                if UserInputService:IsKeyDown(Enum.KeyCode.D) then
+                    velocity = velocity + (camera.CFrame.RightVector * settings.flySpeed)
+                end
+                if UserInputService:IsKeyDown(Enum.KeyCode.Space) then
+                    velocity = velocity + Vector3.new(0, settings.flySpeed, 0)
+                end
+                if UserInputService:IsKeyDown(Enum.KeyCode.LeftShift) then
+                    velocity = velocity - Vector3.new(0, settings.flySpeed, 0)
+                end
+                
+                if rootPart:FindFirstChild("FlyVelocity") then
+                    rootPart.FlyVelocity.Velocity = velocity
+                end
+                if rootPart:FindFirstChild("FlyGyro") then
+                    rootPart.FlyGyro.CFrame = camera.CFrame
+                end
+            end)
+        else
+            if flyConnection then flyConnection:Disconnect() end
+            if rootPart:FindFirstChild("FlyVelocity") then rootPart.FlyVelocity:Destroy() end
+            if rootPart:FindFirstChild("FlyGyro") then rootPart.FlyGyro:Destroy() end
+        end
+    end
+    
+    -- Infinity Jump
+    if input.KeyCode == Enum.KeyCode.Space and settings.infinityJump then
+        humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+    end
+end)
+
+-- NoClip
+RunService.Stepped:Connect(function()
+    if settings.noClip and UserInputService:IsKeyDown(Enum.KeyCode.Q) then
+        for _, part in pairs(character:GetDescendants()) do
+            if part:IsA("BasePart") then
+                part.CanCollide = false
+            end
+        end
+    end
+end)
+
+-- ========================================
+-- INITIALIZATION
+-- ========================================
+
+scrollFrame.CanvasSize = UDim2.new(0, 0, 0, listLayout.AbsoluteContentSize.Y + 10)
+
+game:GetService("StarterGui"):SetCore("SendNotification", {
+    Title = "SCRIPT 66 Loaded";
+    Text = "All working features active";
+    Duration = 5;
+})
+
+print("========================================")
+print("SCRIPT 66 - Loaded Successfully")
+print("Working Features:")
+print("- Speed Boost")
+print("- Infinity Jump")
+print("- Fly (E to toggle, WASD + Space/Shift)")
+print("- NoClip (Hold Q)")
+print("- Anti Ragdoll")
+print("- Fullbright")
+print("- Base Transparency")
+print("- Player ESP")
+print("- Brainrot ESP")
+print("- Server Hop/Rejoin")
+print("========================================")
