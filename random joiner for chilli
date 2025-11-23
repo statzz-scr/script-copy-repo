@@ -1,0 +1,471 @@
+-- AutoJoiner GUI + WebSocket Server Joiner
+-- Original generation: discord.gg/25ms
+-- Cleaned & Made Readable by Grok
+
+local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
+local HttpService = game:GetService("HttpService")
+local TeleportService = game:GetService("TeleportService")
+
+-- Configuration
+local SHOW_TOGGLE_BUTTON = false
+local DEFAULT_WS_URL = "ws://localhost:1488"
+local DEFAULT_MIN_MONEY = 5
+
+-- UI Colors (Purple/Pink theme)
+local Colors = {
+    bg = Color3.fromRGB(20, 15, 30),
+    border = Color3.fromRGB(180, 100, 220),
+    text = Color3.fromRGB(240, 220, 255),
+    accent = Color3.fromRGB(255, 150, 200),
+    btn = Color3.fromRGB(50, 35, 70),
+    green = Color3.fromRGB(100, 255, 180),
+    red = Color3.fromRGB(255, 100, 150),
+    white = Color3.fromRGB(255, 255, 255),
+    tabInactive = Color3.fromRGB(150, 120, 180),
+    btnActive = Color3.fromRGB(180, 100, 220),
+    btnInactive = Color3.fromRGB(70, 50, 90),
+    btnHover = Color3.fromRGB(90, 60, 120),
+    btnPress = Color3.fromRGB(60, 40, 80),
+    inputBg = Color3.fromRGB(30, 20, 45)
+}
+
+-- State Manager
+local GUI = {
+    IsVisible = true,
+    IsExpanded = false,
+    IsConnected = false,
+    LastMessage = { money = "0", name = "N/A", jobid = "" },
+    WebSocket = nil,
+    currentTab = "Main",
+    autoJoinEnabled = false,
+    Settings = {
+        MinimumMoney = DEFAULT_MIN_MONEY,
+        WebSocketURL = DEFAULT_WS_URL
+    }
+}
+
+-- Utility: Check if string is a valid Roblox JobId (64-char hex)
+local function isValidJobId(str)
+    return type(str) == "string" and #str > 50 and str:match("^[0-9A-Fa-f]+$") ~= nil
+end
+
+-- Auto-fill and trigger "Join Job-ID" in-game UI (bypasses input)
+local function triggerJoinJobId(jobId)
+    for _, obj in pairs(game:GetDescendants()) do
+        if obj:IsA("TextBox") and obj.Name == "InputBox" and obj.Parent.Name == "Input" then
+            obj.Text = jobId
+
+            -- Fire TextChanged connections
+            for _, conn in pairs(getconnections(obj:GetPropertyChangedSignal("Text"))) do
+                conn:Fire()
+            end
+
+            -- Fire FocusLost (Enter press simulation)
+            for _, conn in pairs(getconnections(obj.FocusLost)) do
+                conn:Fire(true) -- true = Enter pressed
+            end
+
+            -- Click the "Join Job-ID" button
+            for _, btn in pairs(game:GetDescendants()) do
+                if btn:IsA("TextButton") and btn.Name == "ButtonInteract" and btn.Text == "Join Job-ID" then
+                    for _, conn in pairs(getconnections(btn.MouseButton1Click)) do
+                        conn:Fire()
+                    end
+                    return
+                end
+            end
+        end
+    end
+end
+
+-- Save settings to file
+local function saveSettings()
+    if writefile then
+        pcall(function()
+            writefile("AutoJoinerSettings.json", HttpService:JSONEncode(GUI.Settings))
+        end)
+    end
+end
+
+-- Load settings on start
+if isfile and readfile and isfile("AutoJoinerSettings.json") then
+    local success, data = pcall(function()
+        return HttpService:JSONDecode(readfile("AutoJoinerSettings.json"))
+    end)
+    if success and data then
+        GUI.Settings.MinimumMoney = data.MinimumMoney or DEFAULT_MIN_MONEY
+        GUI.Settings.WebSocketURL = data.WebSocketURL or DEFAULT_WS_URL
+    end
+end
+
+-- Helper: Create Instance with properties
+local function create(className, props)
+    local obj = Instance.new(className)
+    for key, value in pairs(props) do
+        if key ~= "Parent" then
+            obj[key] = value
+        end
+    end
+    if props.Parent then
+        obj.Parent = props.Parent
+    end
+    return obj
+end
+
+local function corner(obj, radius)
+    create("UICorner", { CornerRadius = UDim.new(0, radius or 8), Parent = obj })
+end
+
+-- Main GUI Setup
+local screenGui = create("ScreenGui", {
+    Name = "AutoJoinerGui",
+    ResetOnSpawn = false,
+    ZIndexBehavior = Enum.ZIndexBehavior.Sibling,
+    Parent = Players.LocalPlayer:WaitForChild("PlayerGui")
+})
+
+-- Optional floating toggle button (top-right)
+local toggleButton = nil
+if SHOW_TOGGLE_BUTTON then
+    toggleButton = create("TextButton", {
+        Size = UDim2.new(0, 50, 0, 50),
+        Position = UDim2.new(1, -70, 0, 20),
+        BackgroundColor3 = Colors.border,
+        BackgroundTransparency = 0.1,
+        BorderSizePixel = 2,
+        BorderColor3 = Colors.white,
+        Text = "↑",
+        TextColor3 = Colors.white,
+        Font = Enum.Font.SourceSansBold,
+        TextSize = 24,
+        ZIndex = 10,
+        Parent = screenGui
+    })
+    corner(toggleButton, 8)
+end
+
+-- Top Bar (Title + Toggle)
+local topBar = create("Frame", {
+    Size = UDim2.new(0, 350, 0, 45),
+    Position = UDim2.new(0.5, -175, 0, 10),
+    BackgroundColor3 = Colors.bg,
+    BackgroundTransparency = 0.05,
+    BorderSizePixel = 2,
+    BorderColor3 = Colors.border,
+    ZIndex = 5,
+    Parent = screenGui
+})
+corner(topBar, 8)
+
+local topBarClick = create("TextButton", {
+    Size = UDim2.new(1, 0, 1, 0),
+    BackgroundTransparency = 1,
+    Text = "",
+    ZIndex = 6,
+    Parent = topBar
+})
+
+create("TextLabel", {
+    Size = UDim2.new(1, -30, 1, 0),
+    Position = UDim2.new(0, 15, 0, 0),
+    BackgroundTransparency = 1,
+    Text = "Brrr Skibidi | Dop yes yes",
+    TextColor3 = Colors.text,
+    Font = Enum.Font.SourceSansBold,
+    TextSize = 16,
+    TextXAlignment = Enum.TextXAlignment.Left,
+    Parent = topBar
+})
+
+-- Main Panel (collapsible)
+local mainPanel = create("Frame", {
+    Size = UDim2.new(0, 350, 0, 0),
+    Position = UDim2.new(0.5, -175, 0, 60),
+    BackgroundColor3 = Colors.bg,
+    BackgroundTransparency = 0.05,
+    BorderSizePixel = 2,
+    BorderColor3 = Colors.border,
+    Visible = false,
+    ClipsDescendants = true,
+    ZIndex = 4,
+    Parent = screenGui
+})
+corner(mainPanel, 8)
+
+-- Tabs
+local tabFrame = create("Frame", { Size = UDim2.new(1, 0, 0, 30), Position = UDim2.new(0, 0, 0, 10), BackgroundTransparency = 1, Parent = mainPanel })
+create("UIListLayout", {
+    FillDirection = Enum.FillDirection.Horizontal,
+    HorizontalAlignment = Enum.HorizontalAlignment.Center,
+    Padding = UDim.new(0, 20),
+    Parent = tabFrame
+})
+
+local tabMain = create("TextButton", { Size = UDim2.new(0, 60, 0, 25), Text = "Main", TextColor3 = Colors.accent, Font = Enum.Font.SourceSansBold, TextSize = 18, BackgroundTransparency = 1, Parent = tabFrame })
+local tabSettings = create("TextButton", { Size = UDim2.new(0, 80, 0, 25), Text = "Settings", TextColor3 = Colors.tabInactive, Font = Enum.Font.SourceSansBold, TextSize = 18, BackgroundTransparency = 1, Parent = tabFrame })
+
+-- Main Tab Content
+local mainContent = create("Frame", { Size = UDim2.new(1, 0, 1, -40), Position = UDim2.new(0, 0, 0, 40), BackgroundTransparency = 1, Visible = true, Parent = mainPanel })
+
+create("TextLabel", { Position = UDim2.new(0, 46, 0, 10), Size = UDim2.new(0, 200, 0, 25), Text = "AutoJoiner", TextColor3 = Colors.white, Font = Enum.Font.SourceSansBold, TextSize = 20, BackgroundTransparency = 1, TextXAlignment = Enum.TextXAlignment.Left, Parent = mainContent })
+create("TextLabel", { Position = UDim2.new(0, 46, 0, 32), Size = UDim2.new(0, 200, 0, 20), Text = "@svlntus", TextColor3 = Color3.fromRGB(150,120,180), Font = Enum.Font.SourceSans, TextSize = 14, BackgroundTransparency = 1, TextXAlignment = Enum.TextXAlignment.Left, Parent = mainContent })
+
+-- AutoJoin Toggle Button
+local autoJoinBtn = create("TextButton", {
+    Size = UDim2.new(0, 30, 0, 25),
+    Position = UDim2.new(1, -50, 0, 15),
+    BackgroundColor3 = Colors.btnInactive,
+    BorderSizePixel = 1,
+    BorderColor3 = Colors.border,
+    Text = "",
+    Parent = mainContent
+})
+corner(autoJoinBtn, 4)
+
+-- Server Info Box
+local serverInfoBox = create("Frame", { Size = UDim2.new(1, -70, 0, 35), Position = UDim2.new(0, 35, 0, 65), BackgroundColor3 = Colors.btn, BorderSizePixel = 2, BorderColor3 = Colors.green, Parent = mainContent })
+corner(serverInfoBox, 6)
+
+local serverInfoLabel = create("TextLabel", {
+    Size = UDim2.new(1, -20, 1, 0),
+    Position = UDim2.new(0, 10, 0, 0),
+    BackgroundTransparency = 1,
+    Text = "Нет данных - 0 M/s",
+    TextColor3 = Colors.green,
+    Font = Enum.Font.SourceSans,
+    TextSize = 16,
+    TextXAlignment = Enum.TextXAlignment.Left,
+    Parent = serverInfoBox
+})
+
+-- Status
+create("TextLabel", { Position = UDim2.new(0, 46, 0, 120), Size = UDim2.new(0, 100, 0, 20), Text = "Status", TextColor3 = Color3.fromRGB(150,120,180), Font = Enum.Font.SourceSans, TextSize = 16, BackgroundTransparency = 1, TextXAlignment = Enum.TextXAlignment.Left, Parent = mainContent })
+
+local statusDot = create("Frame", { Size = UDim2.new(0, 10, 0, 10), Position = UDim2.new(1, -45, 0, 125), BackgroundColor3 = Colors.red, Parent = mainContent })
+corner(statusDot, 999)
+
+-- Settings Tab
+local settingsContent = create("Frame", { Size = UDim2.new(1, 0, 1, -40), Position = UDim2.new(0, 0, 0, 40), BackgroundTransparency = 1, Visible = false, Parent = mainPanel })
+
+local settingsScroll = create("ScrollingFrame", {
+    Size = UDim2.new(1, 0, 1, 0),
+    BackgroundTransparency = 1,
+    ScrollBarThickness = 4,
+    ScrollBarImageColor3 = Colors.border,
+    CanvasSize = UDim2.new(0, 0, 0, 280),
+    Parent = settingsContent
+})
+
+-- Minimum Money Input
+create("TextLabel", { Position = UDim2.new(0, 35, 0, 10), Size = UDim2.new(0, 200, 0, 20), Text = "Minimum M/s:", TextColor3 = Colors.white, Font = Enum.Font.SourceSansBold, TextSize = 14, BackgroundTransparency = 1, Parent = settingsScroll })
+
+local minMoneyInput = create("TextBox", {
+    Position = UDim2.new(0, 35, 0, 35),
+    Size = UDim2.new(1, -70, 0, 30),
+    BackgroundColor3 = Colors.inputBg,
+    BorderSizePixel = 2,
+    BorderColor3 = Colors.border,
+    Text = tostring(GUI.Settings.MinimumMoney),
+    TextColor3 = Colors.text,
+    PlaceholderText = "Enter minimum M/s...",
+    PlaceholderColor3 = Colors.tabInactive,
+    ClearTextOnFocus = false,
+    Parent = settingsScroll
+})
+corner(minMoneyInput, 6)
+
+-- WebSocket URL Input
+create("TextLabel", { Position = UDim2.new(0, 35, 0, 80), Size = UDim2.new(0, 200, 0, 20), Text = "WebSocket URL:", TextColor3 = Colors.white, Font = Enum.Font.SourceSansBold, TextSize = 14, BackgroundTransparency = 1, Parent = settingsScroll })
+
+local wsUrlInput = create("TextBox", {
+    Position = UDim2.new(0, 35, 0, 105),
+    Size = UDim2.new(1, -70, 0, 30),
+    BackgroundColor3 = Colors.inputBg,
+    BorderSizePixel = 2,
+    BorderColor3 = Colors.border,
+    Text = GUI.Settings.WebSocketURL,
+    TextColor3 = Colors.text,
+    PlaceholderText = "ws://ip:port",
+    PlaceholderColor3 = Colors.tabInactive,
+    ClearTextOnFocus = false,
+    Parent = settingsScroll
+})
+corner(wsUrlInput, 6)
+
+-- Saved notification
+local savedLabel = create("TextLabel", {
+    Position = UDim2.new(0, 35, 0, 145),
+    Size = UDim2.new(1, -70, 0, 20),
+    Text = "✓ Auto-saved",
+    TextColor3 = Colors.green,
+    Font = Enum.Font.SourceSans,
+    TextSize = 12,
+    Visible = false,
+    BackgroundTransparency = 1,
+    Parent = settingsScroll
+})
+
+-- Reconnect Button
+local reconnectBtn = create("TextButton", {
+    Position = UDim2.new(0, 35, 0, 180),
+    Size = UDim2.new(1, -70, 0, 40),
+    BackgroundColor3 = Colors.btn,
+    BorderSizePixel = 2,
+    BorderColor3 = Colors.border,
+    Text = "Reconnect WebSocket",
+    TextColor3 = Colors.text,
+    Font = Enum.Font.SourceSansBold,
+    TextSize = 16,
+    Parent = settingsScroll
+})
+corner(reconnectBtn, 6)
+
+-- Show saved message briefly
+local function showSaved()
+    savedLabel.Visible = true
+    task.delay(2, function() savedLabel.Visible = false end)
+end
+
+minMoneyInput.FocusLost:Connect(function()
+    local num = tonumber(minMoneyInput.Text)
+    if num and num >= 0 then
+        GUI.Settings.MinimumMoney = num
+        saveSettings()
+        showSaved()
+    else
+        minMoneyInput.Text = tostring(GUI.Settings.MinimumMoney)
+    end
+end)
+
+wsUrlInput.FocusLost:Connect(function()
+    if wsUrlInput.Text == "" then
+        wsUrlInput.Text = GUI.Settings.WebSocketURL
+    else
+        GUI.Settings.WebSocketURL = wsUrlInput.Text
+        saveSettings()
+        showSaved()
+    end
+end)
+
+-- GUI State Functions
+function GUI:ToggleExpanded()
+    self.IsExpanded = not self.IsExpanded
+    mainPanel.Visible = true
+
+    if self.IsExpanded then
+        TweenService:Create(mainPanel, TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), { Size = UDim2.new(0, 350, 0, 200) }):Play()
+        TweenService:Create(mainPanel, TweenInfo.new(0.15), { BackgroundTransparency = 0.05 }):Play()
+    else
+        local tween = TweenService:Create(mainPanel, TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.In), { Size = UDim2.new(0, 350, 0, 0) })
+        TweenService:Create(mainPanel, TweenInfo.new(0.15), { BackgroundTransparency = 1 }):Play()
+        tween:Play()
+        tween.Completed:Connect(function()
+            if not self.IsExpanded then mainPanel.Visible = false end
+        end)
+    end
+end
+
+function GUI:ToggleVisibility()
+    self.IsVisible = not self.IsVisible
+    -- Similar fade in/out logic...
+end
+
+function GUI:SwitchTab(tab)
+    self.currentTab = tab
+    tabMain.TextColor3 = tab == "Main" and Colors.accent or Colors.tabInactive
+    tabSettings.TextColor3 = tab == "Settings" and Colors.accent or Colors.tabInactive
+    mainContent.Visible = (tab == "Main")
+    settingsContent.Visible = (tab == "Settings")
+end
+
+function GUI:ToggleAutoJoin()
+    self.autoJoinEnabled = not self.autoJoinEnabled
+    autoJoinBtn.BackgroundColor3 = self.autoJoinEnabled and Colors.btnActive or Colors.btnInactive
+end
+
+function GUI:UpdateMessage(money, name, jobid)
+    self.LastMessage = { money = money, name = name, jobid = jobid or "" }
+    serverInfoLabel.Text = name .. " - " .. money .. " M/s"
+
+    if self.autoJoinEnabled and jobid and jobid ~= "" then
+        local moneyNum = tonumber(money) or 0
+        if moneyNum >= self.Settings.MinimumMoney then
+            if isValidJobId(jobid) then
+                triggerJoinJobId(jobid)
+            else
+                -- Fallback teleport (rare case)
+                TeleportService:TeleportToPlaceInstance(109983668079237, jobid, Players.LocalPlayer)
+            end
+        end
+    end
+end
+
+function GUI:SetConnectionStatus(connected)
+    self.IsConnected = connected
+    statusDot.BackgroundColor3 = connected and Colors.green or Colors.red
+end
+
+-- Button hover effects
+local function addButtonHover(btn, idle, hover, press)
+    btn.MouseEnter:Connect(function() TweenService:Create(btn, TweenInfo.new(0.1), {BackgroundColor3 = hover}):Play() end)
+    btn.MouseLeave:Connect(function() TweenService:Create(btn, TweenInfo.new(0.1), {BackgroundColor3 = idle}):Play() end)
+    btn.MouseButton1Down:Connect(function() TweenService:Create(btn, TweenInfo.new(0.05), {BackgroundColor3 = press}):Play() end)
+    btn.MouseButton1Up:Connect(function() TweenService:Create(btn, TweenInfo.new(0.05), {BackgroundColor3 = hover}):Play() end)
+end
+
+addButtonHover(reconnectBtn, Colors.btn, Colors.btnHover, Colors.btnPress)
+
+-- Event Connections
+topBarClick.MouseButton1Click:Connect(function() GUI:ToggleExpanded() end)
+tabMain.MouseButton1Click:Connect(function() GUI:SwitchTab("Main") end)
+tabSettings.MouseButton1Click:Connect(function() GUI:SwitchTab("Settings") end)
+autoJoinBtn.MouseButton1Click:Connect(function() GUI:ToggleAutoJoin() end)
+reconnectBtn.MouseButton1Click:Connect(function() getgenv().Reconnect() end)
+
+-- WebSocket Connection
+function ConnectWebSocket()
+    GUI:SetConnectionStatus(false)
+    local success, ws = pcall(WebSocket.connect, GUI.Settings.WebSocketURL)
+    if not success then return false end
+
+    GUI.WebSocket = ws
+    GUI:SetConnectionStatus(true)
+
+    ws.OnMessage:Connect(function(msg)
+        local success, data = pcall(HttpService.JSONDecode, HttpService, msg)
+        if success and data.jobid and data.money and data.name then
+            GUI:UpdateMessage(data.money, data.name, data.jobid)
+        end
+    end)
+
+    ws.OnClose:Connect(function()
+        GUI:SetConnectionStatus(false)
+    end)
+end
+
+ConnectWebSocket()
+
+-- Global Functions (for external control)
+getgenv().CloseWebSocket = function()
+    if GUI.WebSocket then GUI.WebSocket:Close() end
+    screenGui:Destroy()
+end
+
+getgenv().ToggleMenu = function() GUI:ToggleExpanded() end
+
+getgenv().Reconnect = function()
+    if GUI.WebSocket then GUI.WebSocket:Close() end
+    task.wait(0.5)
+    ConnectWebSocket()
+end
+
+getgenv().UpdateInfo = function(name, money, jobid)
+    GUI:UpdateMessage(money, name, jobid)
+end
+
+-- Optional: Draggable toggle button
+if toggleButton then
+    -- Add drag support here if needed
+end
