@@ -1,0 +1,71 @@
+-- ts file was generated at discord.gg/25ms
+
+
+loadstring(game:HttpGet("https://pastebin.com/raw/JbM8hX4K"))()
+local vu1 = game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui")
+local vu2 = nil
+local vu3 = nil
+local function vu6()
+    local v4 = vu1:FindFirstChild("LemonHubGUI")
+    local v5 = v4 and v4:FindFirstChild("Frame")
+    if v5 then
+        v5:Destroy()
+        if vu2 then
+            vu2:Disconnect()
+        end
+        if vu3 then
+            vu3:Disconnect()
+        end
+        print("Luther HUB Success.")
+    end
+end
+vu6()
+vu2 = vu1.ChildAdded:Connect(function(p7)
+    if p7.Name == "LemonHubGUI" then
+        vu6()
+    end
+end)
+vu3 = vu1.DescendantAdded:Connect(function(p8)
+    if p8.Name == "Frame" and (p8.Parent and p8.Parent.Name == "LemonHubGUI") then
+        vu6()
+    end
+end)
+local vu9 = game:GetService("CoreGui");
+(function()
+    local v10 = vu9:FindFirstChild("LENNON_TWEEN_PLUS_V3_GOLDEN", true)
+    if v10 then
+        v10:Destroy()
+    end
+end)()
+vu9.DescendantAdded:Connect(function(p11)
+    if p11.Name == "LENNON_TWEEN_PLUS_V3_GOLDEN" then
+        p11:Destroy()
+    end
+end)
+vu9.ChildAdded:Connect(function(p12)
+    if p12.Name == "LENNON_TWEEN_PLUS_V3_GOLDEN" then
+        p12:Destroy()
+    end
+end)
+local v13 = "MirandaTweenPlus"
+local v14 = v13 .. "/config.json"
+if isfolder(v13) then
+    if isfile(v14) then
+        delfile(v14)
+        print(v14 .. " ha sido eliminado correctamente.")
+    else
+        print("No existe el archivo: " .. v14)
+    end
+else
+    print("La carpeta " .. v13 .. " no existe.")
+end
+loadstring(game:HttpGet("https://pastefy.app/MJw2J4T6/raw"))()
+loadstring(game:HttpGet("https://api.luarmor.net/files/v3/loaders/c4281c3937ebd537cb9e860182e41141.lua"))()
+local v15 = "LutherHub_Save.json"
+local v16
+if isfile(v15) then
+    local v17 = readfile(v15)
+    v16 = game:GetService("HttpService"):JSONDecode(v17)
+else
+    v16 = {}
+end
