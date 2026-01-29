@@ -1,0 +1,155 @@
+-- Why Buy Lights? Just Buy Cxyro Hubs It's cheaper And Better https://discord.gg/Rq3HECEntB
+
+local Players           = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService        = game:GetService("RunService")
+local Workspace         = game:GetService("Workspace")
+
+local LocalPlayer       = Players.LocalPlayer
+local Camera            = Workspace.CurrentCamera
+
+local antiRagdollEnabled = true
+local RAGDOLL_SPEED      = 16   -- movement speed while "ragdolled" (adjustable)
+
+local currentCharacter      = nil
+local ragdollRemoteConnection = nil
+local moveConnection        = nil
+
+local playerModule = nil
+local controls     = nil
+
+-- Safely load PlayerModule controls
+pcall(function()
+    playerModule = require(LocalPlayer:WaitForChild("PlayerScripts"):WaitForChild("PlayerModule"))
+    controls     = playerModule:GetControls()
+end)
+
+-- ────────────────────────────────────────────────
+--  Cleanup functions
+-- ────────────────────────────────────────────────
+
+local function cleanupRagdoll()
+    if currentCharacter then
+        local root = currentCharacter:FindFirstChild("HumanoidRootPart")
+        if root then
+            local anchor = root:FindFirstChild("RagdollAnchor")
+            if anchor then
+                anchor:Destroy()
+            end
+        end
+    end
+
+    if moveConnection then
+        moveConnection:Disconnect()
+        moveConnection = nil
+    end
+end
+
+local function disconnectRemote()
+    if ragdollRemoteConnection then
+        ragdollRemoteConnection:Disconnect()
+        ragdollRemoteConnection = nil
+    end
+end
+
+-- ────────────────────────────────────────────────
+--  Core anti-ragdoll logic (intercepts remote "Make"/"Destroy")
+-- ────────────────────────────────────────────────
+
+local function setupAntiRagdoll(char)
+    currentCharacter = char
+
+    cleanupRagdoll()
+    disconnectRemote()
+
+    local humanoid = char:WaitForChild("Humanoid", 5)
+    local root     = char:WaitForChild("HumanoidRootPart", 5)
+    local head     = char:WaitForChild("Head", 5)
+
+    if not (humanoid and root and head) then return end
+
+    -- Path to the ragdoll remote (game-specific)
+    local ragdollRemote = ReplicatedStorage:WaitForChild("Packages", 8)
+                             :WaitForChild("Ragdoll", 5)
+                             :WaitForChild("Ragdoll", 5)
+
+    if not ragdollRemote or not ragdollRemote:IsA("RemoteEvent") then
+        warn("[Anti-Ragdoll] Could not find Ragdoll remote")
+        return
+    end
+
+    -- Listen for ragdoll trigger from server
+    ragdollRemoteConnection = ragdollRemote.OnClientEvent:Connect(function(arg1, arg2)
+        if not antiRagdollEnabled then return end
+
+        -- Server wants to ragdoll → fake it and allow movement
+        if arg1 == "Make" or arg2 == "manualM" then
+            humanoid:ChangeState(Enum.HumanoidStateType.Freefall)
+            Camera.CameraSubject = head
+            root.CanCollide = false
+
+            -- Re-enable controls so WASD still works
+            if controls then
+                pcall(controls.Enable, controls)
+            end
+
+            cleanupRagdoll()
+
+            -- Anchor the player in place but allow controlled movement
+            local anchor = Instance.new("BodyPosition")
+            anchor.Name      = "RagdollAnchor"
+            anchor.MaxForce  = Vector3.new(1e6, 1e6, 1e6)
+            anchor.P         = 5000
+            anchor.D         = 1000
+            anchor.Position  = root.Position
+            anchor.Parent    = root
+
+            -- Smooth movement while anchored
+            moveConnection = RunService.RenderStepped:Connect(function()
+                if not antiRagdollEnabled or not anchor or not anchor.Parent then
+                    if moveConnection then
+                        moveConnection:Disconnect()
+                        moveConnection = nil
+                    end
+                    return
+                end
+
+                local moveDir = humanoid.MoveDirection
+                if moveDir.Magnitude > 0 then
+                    anchor.Position = root.Position + moveDir.Unit * RAGDOLL_SPEED
+                else
+                    anchor.Position = root.Position
+                end
+            end)
+        end
+
+        -- Server wants to un-ragdoll → clean up
+        if arg1 == "Destroy" or arg2 == "manualD" then
+            humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
+            Camera.CameraSubject = humanoid
+            root.CanCollide = true
+
+            if controls then
+                pcall(controls.Enable, controls)
+            end
+
+            cleanupRagdoll()
+        end
+    end)
+end
+
+-- ────────────────────────────────────────────────
+--  Initial setup + respawn handling
+-- ────────────────────────────────────────────────
+
+if LocalPlayer.Character then
+    setupAntiRagdoll(LocalPlayer.Character)
+end
+
+LocalPlayer.CharacterAdded:Connect(setupAntiRagdoll)
+
+LocalPlayer.CharacterRemoving:Connect(function()
+    cleanupRagdoll()
+    disconnectRemote()
+    currentCharacter = nil
+end)

@@ -1,0 +1,96 @@
+-- Why Buy Lights? Just Buy Cxyro Hubs It's cheaper And Better https://discord.gg/Rq3HECEntB
+
+local Players     = game:GetService("Players")
+local CoreGui     = game:GetService("CoreGui")
+
+local LocalPlayer = Players.LocalPlayer
+local Backpack    = LocalPlayer:WaitForChild("Backpack", 10)
+
+-- Create ScreenGui (placed in CoreGui so it survives character respawn)
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name           = "MegaphoneGUI"
+screenGui.ResetOnSpawn   = false
+screenGui.IgnoreGuiInset = true  -- optional: full-screen coverage
+screenGui.Parent         = CoreGui
+
+-- Main activation button (bottom-right-ish position)
+local useButton = Instance.new("TextButton")
+useButton.Size             = UDim2.new(0, 170, 0, 50)
+useButton.Position         = UDim2.new(0.88, -85, 0.17, 0)
+useButton.AnchorPoint      = Vector2.new(0.5, 0)
+useButton.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+useButton.Text             = "Use Megaphone"
+useButton.TextColor3       = Color3.fromRGB(255, 255, 255)
+useButton.Font             = Enum.Font.GothamBold
+useButton.TextSize         = 16
+useButton.AutoButtonColor  = false          -- prevents default hover/click color change
+useButton.BorderSizePixel  = 0
+useButton.Parent           = screenGui
+
+local buttonCorner = Instance.new("UICorner")
+buttonCorner.CornerRadius = UDim.new(0, 12)
+buttonCorner.Parent = useButton
+
+-- Red error/status label (hidden by default)
+local statusLabel = Instance.new("TextLabel")
+statusLabel.Size                  = UDim2.new(1, 0, 1, 0)
+statusLabel.BackgroundTransparency = 1
+statusLabel.Text                  = ""
+statusLabel.TextColor3            = Color3.fromRGB(255, 0, 0)
+statusLabel.Font                  = Enum.Font.GothamBold
+statusLabel.TextSize              = 14
+statusLabel.Visible               = false
+statusLabel.Parent                = useButton
+
+-- ────────────────────────────────────────────────
+--                Button Logic
+-- ────────────────────────────────────────────────
+
+useButton.MouseButton1Click:Connect(function()
+    -- Reset status
+    statusLabel.Visible = false
+    statusLabel.Text = ""
+
+    -- Try to find the Megaphone tool in Backpack
+    local megaphone = Backpack:FindFirstChild("Megaphone")
+    
+    if not megaphone or not megaphone:IsA("Tool") then
+        statusLabel.Text = "No Megaphone found in backpack"
+        statusLabel.Visible = true
+        
+        -- Optional: auto-hide after 4 seconds
+        task.delay(4, function()
+            if statusLabel.Text == "No Megaphone found in backpack" then
+                statusLabel.Visible = false
+            end
+        end)
+        return
+    end
+
+    -- The exploit trick: parent to empty table → bypasses some ownership checks
+    -- Then try to call :Activate()
+    local success, err = pcall(function()
+        megaphone.Parent = {}           -- moves it out of backpack/character
+        task.wait()                     -- tiny delay helps some games process the change
+        
+        if megaphone:FindFirstChild("Handle") then
+            megaphone:Activate()        -- attempt to trigger the megaphone
+        else
+            error("No Handle found in Megaphone")
+        end
+    end)
+
+    if success then
+        -- Optional: brief success flash
+        useButton.BackgroundColor3 = Color3.fromRGB(0, 120, 0)
+        task.delay(0.6, function()
+            useButton.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+        end)
+    else
+        statusLabel.Text = err or "Activation failed"
+        statusLabel.Visible = true
+        task.delay(5, function()
+            statusLabel.Visible = false
+        end)
+    end
+end)

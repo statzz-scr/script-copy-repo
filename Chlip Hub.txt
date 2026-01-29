@@ -1,0 +1,805 @@
+local Chlip_Hub = Instance.new("ScreenGui")
+Chlip_Hub.Name = "Chlip Hub"
+Chlip_Hub.ResetOnSpawn = false
+local Players = game.Players
+local LocalPlayer = Players.LocalPlayer
+Chlip_Hub.Parent = LocalPlayer:WaitForChild("PlayerGui")
+local TextButton = Instance.new("TextButton")
+local UDim2_New = UDim2.new
+TextButton.Size = UDim2_New(0, 60, 0, 60)
+TextButton.Position = UDim2_New(0, 20, 0.5, -30)
+local Color3_FromRGB = Color3.fromRGB
+TextButton.BackgroundColor3 = Color3_FromRGB(255, 255, 255)
+TextButton.BackgroundTransparency = 0.1
+TextButton.Text = "CHLIP"
+local Enum_Font = Enum.Font
+TextButton.Font = Enum_Font.Arcade
+TextButton.TextSize = 16
+TextButton.TextColor3 = Color3_FromRGB(0, 0, 0)
+TextButton.Active = true
+TextButton.Draggable = true
+TextButton.Parent = Chlip_Hub
+local UICorner = Instance.new("UICorner")
+local UDim_New = UDim.new
+UICorner.CornerRadius = UDim_New(1, 0)
+UICorner.Parent = TextButton
+local Frame = Instance.new("Frame")
+Frame.Size = UDim2_New(0, 160, 0, 200)
+Frame.Position = UDim2_New(0.5, -80, 0.5, -100)
+Frame.BackgroundColor3 = Color3_FromRGB(255, 255, 255)
+Frame.BackgroundTransparency = 0.1
+Frame.BorderSizePixel = 0
+Frame.Active = true
+Frame.Draggable = true
+Frame.Visible = false
+Frame.Parent = Chlip_Hub
+local UICorner_2 = Instance.new("UICorner")
+UICorner_2.CornerRadius = UDim_New(0, 12)
+UICorner_2.Parent = Frame
+local TextLabel = Instance.new("TextLabel")
+TextLabel.Size = UDim2_New(1, 0, 0, 25)
+TextLabel.BackgroundTransparency = 1
+TextLabel.Text = "Chlip Hub Tools"
+TextLabel.Font = Enum_Font.Arcade
+TextLabel.TextSize = 16
+TextLabel.TextColor3 = Color3_FromRGB(0, 0, 0)
+TextLabel.Parent = Frame
+local UIListLayout = Instance.new("UIListLayout")
+UIListLayout.Padding = UDim_New(0, 5)
+UIListLayout.FillDirection = Enum.FillDirection.Vertical
+UIListLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+UIListLayout.VerticalAlignment = Enum.VerticalAlignment.Top
+UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+UIListLayout.Parent = Frame
+local Connection
+Connection = UIListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function(p1_0, p2_0)
+    Frame.Size = UDim2_New(0, 160, 0, 1095)
+end)
+local TextButton_2 = Instance.new("TextButton")
+TextButton_2.Size = UDim2_New(0, 140, 0, 28)
+TextButton_2.Text = "Teleguiado"
+TextButton_2.Font = Enum_Font.Arcade
+TextButton_2.TextSize = 16
+TextButton_2.TextColor3 = Color3_FromRGB(255, 255, 255)
+TextButton_2.BackgroundColor3 = Color3_FromRGB(30, 144, 255)
+TextButton_2.AutoButtonColor = false
+local UICorner_3 = Instance.new("UICorner")
+UICorner_3.CornerRadius = UDim_New(0, 8)
+UICorner_3.Parent = TextButton_2
+TextButton_2.Parent = Frame
+local TextButton_3 = Instance.new("TextButton")
+TextButton_3.Size = UDim2_New(0, 140, 0, 28)
+TextButton_3.Text = "Float"
+TextButton_3.Font = Enum_Font.Arcade
+TextButton_3.TextSize = 16
+TextButton_3.TextColor3 = Color3_FromRGB(255, 255, 255)
+TextButton_3.BackgroundColor3 = Color3_FromRGB(30, 144, 255)
+TextButton_3.AutoButtonColor = false
+local UICorner_4 = Instance.new("UICorner")
+UICorner_4.CornerRadius = UDim_New(0, 8)
+UICorner_4.Parent = TextButton_3
+TextButton_3.Parent = Frame
+local TextButton_4 = Instance.new("TextButton")
+TextButton_4.Size = UDim2_New(0, 140, 0, 28)
+TextButton_4.Text = "Noclip"
+TextButton_4.Font = Enum_Font.Arcade
+TextButton_4.TextSize = 16
+TextButton_4.TextColor3 = Color3_FromRGB(255, 255, 255)
+TextButton_4.BackgroundColor3 = Color3_FromRGB(30, 144, 255)
+TextButton_4.AutoButtonColor = false
+local UICorner_5 = Instance.new("UICorner")
+UICorner_5.CornerRadius = UDim_New(0, 8)
+UICorner_5.Parent = TextButton_4
+TextButton_4.Parent = Frame
+local TextButton_5 = Instance.new("TextButton")
+TextButton_5.Size = UDim2_New(0, 140, 0, 28)
+TextButton_5.Text = "Speed Booster"
+TextButton_5.Font = Enum_Font.Arcade
+TextButton_5.TextSize = 16
+TextButton_5.TextColor3 = Color3_FromRGB(255, 255, 255)
+TextButton_5.BackgroundColor3 = Color3_FromRGB(30, 144, 255)
+TextButton_5.AutoButtonColor = false
+local UICorner_6 = Instance.new("UICorner")
+UICorner_6.CornerRadius = UDim_New(0, 8)
+UICorner_6.Parent = TextButton_5
+TextButton_5.Parent = Frame
+local TextButton_6 = Instance.new("TextButton")
+TextButton_6.Size = UDim2_New(0, 140, 0, 28)
+TextButton_6.Text = "3rd Floor"
+TextButton_6.Font = Enum_Font.Arcade
+TextButton_6.TextSize = 16
+TextButton_6.TextColor3 = Color3_FromRGB(255, 255, 255)
+TextButton_6.BackgroundColor3 = Color3_FromRGB(30, 144, 255)
+TextButton_6.AutoButtonColor = false
+local UICorner_7 = Instance.new("UICorner")
+UICorner_7.CornerRadius = UDim_New(0, 8)
+UICorner_7.Parent = TextButton_6
+TextButton_6.Parent = Frame
+local TextButton_7 = Instance.new("TextButton")
+TextButton_7.Size = UDim2_New(0, 140, 0, 28)
+TextButton_7.Text = "Desync"
+TextButton_7.Font = Enum_Font.Arcade
+TextButton_7.TextSize = 16
+TextButton_7.TextColor3 = Color3_FromRGB(255, 255, 255)
+TextButton_7.BackgroundColor3 = Color3_FromRGB(30, 144, 255)
+TextButton_7.AutoButtonColor = false
+local UICorner_8 = Instance.new("UICorner")
+UICorner_8.CornerRadius = UDim_New(0, 8)
+UICorner_8.Parent = TextButton_7
+TextButton_7.Parent = Frame
+game:GetService("ReplicatedStorage")
+game:GetService("Players")
+local RunService = game:GetService("RunService")
+local Connection_2
+Connection_2 = TextButton_4.MouseButton1Click:Connect(function(p1_0)
+    local Character_6 = LocalPlayer.Character
+    if not Character_6 then -- didnt run, expr id 1, has an else.
+    else
+        local HumanoidRootPart_5 = Character_6:WaitForChild("HumanoidRootPart")
+    end
+    HumanoidRootPart_5.Anchored = true
+    local CFrame_New = CFrame.new
+    HumanoidRootPart_5.CFrame = CFrame_New(0, -1e+66, 0)
+    task.wait(0.5)
+    HumanoidRootPart_5.CFrame = CFrame_New(0, 0, 0)
+    HumanoidRootPart_5.Anchored = false
+    TextButton_4.BackgroundColor3 = Color3_FromRGB(0, 100, 0)
+    task.wait(1)
+    TextButton_4.BackgroundColor3 = Color3_FromRGB(30, 144, 255)
+end)
+local Character = LocalPlayer.Character
+local _ = ((Character and 15292654); -- 15292654 or 15919254)
+local Humanoid = Character:WaitForChild("Humanoid")
+local HumanoidRootPart = Character:WaitForChild("HumanoidRootPart")
+LocalPlayer:WaitForChild("Backpack")
+local Connection_3
+Connection_3 = TextButton_3.MouseButton1Click:Connect(function(p1_0)
+    local Connection_13
+    Connection_13 = RunService.Heartbeat:Connect(function() -- args: DeltaTime
+        local Character_15 = LocalPlayer.Character
+        local _ = not Character_15
+        -- false
+        local Humanoid_5 = Character_15:FindFirstChildOfClass("Humanoid")
+        if not Character_15:FindFirstChild("HumanoidRootPart") then -- didnt run, expr id 29, has an else.
+        else
+            local _ = ((Humanoid_5 and 10312728); -- 10312728 or 14981427)
+        end
+        local _ = (Humanoid_5.Health > 0); -- nil
+    end)
+    TextButton_3.BackgroundColor3 = Color3_FromRGB(0, 100, 0)
+    TextButton_3.Text = "Float [ON]"
+end)
+local Connection_4
+Connection_4 = LocalPlayer.CharacterAdded:Connect(function() -- args: Character_7
+    Connection_13:Disconnect()
+    local Character_8 = LocalPlayer.Character
+    local var23 = (Character_8 and 16447125); -- 16447125
+    local var24 = (var23 or 14377860)
+    local HumanoidRootPart_6 = Character_8:FindFirstChild("HumanoidRootPart")
+    local _ = (HumanoidRootPart_6 and 16174195); -- 16174195
+    HumanoidRootPart_6.AssemblyLinearVelocity = Vector3_New(HumanoidRootPart_6.AssemblyLinearVelocity.X, 0, HumanoidRootPart_6.AssemblyLinearVelocity.Z)
+    TextButton_3.BackgroundColor3 = Color3_FromRGB(30, 144, 255)
+    TextButton_3.Text = "Float"
+end)
+local Connection_5
+Connection_5 = TextButton_7.MouseButton1Click:Connect(function(p1_0, p2_0, p3_0, p4_0)
+    local Character_9 = LocalPlayer.Character
+    local _ = (Character_9 and 16237345); -- 16237345
+    local HumanoidRootPart_7 = Character_9:FindFirstChild("HumanoidRootPart")
+    if HumanoidRootPart_7 then -- ran, expr id 2, has an else.
+        HumanoidRootPart_7.CFrame = HumanoidRootPart_7.CFrame * CFrame_New(0, 0, 50)
+    end
+    task.wait(0.2)
+    setfflag("LargeReplicatorWrite5", "true")
+    setfflag("LargeReplicatorEnabled9", "true")
+    setfflag("AngularVelociryLimit", "360")
+    setfflag("TimestepArbiterVelocityCriteriaThresholdTwoDt", "2147483646")
+    setfflag("S2PhysicsSenderRate", "15000")
+    setfflag("DisableDPIScale", "true")
+    setfflag("MaxDataPacketPerSend", "2147483647")
+    setfflag("ServerMaxBandwith", "52")
+    setfflag("PhysicsSenderMaxBandwidthBps", "20000")
+    setfflag("MaxTimestepMultiplierBuoyancy", "2147483647")
+    setfflag("SimOwnedNOUCountThresholdMillionth", "2147483647")
+    setfflag("MaxMissedWorldStepsRemembered", "-2147483648")
+    setfflag("CheckPVDifferencesForInterpolationMinVelThresholdStudsPerSecHundredth", "1")
+    setfflag("StreamJobNOUVolumeLengthCap", "2147483647")
+    setfflag("DebugSendDistInSteps", "-2147483648")
+    setfflag("MaxTimestepMultiplierAcceleration", "2147483647")
+    setfflag("LargeReplicatorRead5", "true")
+    setfflag("SimExplicitlyCappedTimestepMultiplier", "2147483646")
+    setfflag("GameNetDontSendRedundantNumTimes", "1")
+    setfflag("CheckPVLinearVelocityIntegrateVsDeltaPositionThresholdPercent", "1")
+    setfflag("CheckPVCachedRotVelThresholdPercent", "10")
+    setfflag("LargeReplicatorSerializeRead3", "true")
+    setfflag("ReplicationFocusNouExtentsSizeCutoffForPauseStuds", "2147483647")
+    setfflag("NextGenReplicatorEnabledWrite4", "true")
+    setfflag("CheckPVDifferencesForInterpolationMinRotVelThresholdRadsPerSecHundredth", "1")
+    setfflag("GameNetDontSendRedundantDeltaPositionMillionth", "1")
+    setfflag("InterpolationFrameVelocityThresholdMillionth", "5")
+    setfflag("StreamJobNOUVolumeCap", "2147483647")
+    setfflag("InterpolationFrameRotVelocityThresholdMillionth", "5")
+    setfflag("WorldStepMax", "30")
+    setfflag("TimestepArbiterHumanoidLinearVelThreshold", "1")
+    setfflag("InterpolationFramePositionThresholdMillionth", "5")
+    setfflag("TimestepArbiterHumanoidTurningVelThreshold", "1")
+    setfflag("MaxTimestepMultiplierContstraint", "2147483647")
+    setfflag("GameNetPVHeaderLinearVelocityZeroCutoffExponent", "-5000")
+    setfflag("CheckPVCachedVelThresholdPercent", "10")
+    setfflag("TimestepArbiterOmegaThou", "1073741823")
+    setfflag("MaxAcceptableUpdateDelay", "1")
+    setfflag("LargeReplicatorSerializeWrite4", "true")
+    TextButton_7.BackgroundColor3 = Color3_FromRGB(0, 100, 0)
+    task.wait(1)
+    TextButton_7.BackgroundColor3 = Color3_FromRGB(30, 144, 255)
+end)
+local TextButton_8 = Instance.new("TextButton")
+TextButton_8.Size = UDim2_New(0, 120, 0, 22)
+TextButton_8.Text = "Discord"
+TextButton_8.Font = Enum_Font.Arcade
+TextButton_8.TextSize = 14
+TextButton_8.TextColor3 = Color3_FromRGB(255, 255, 255)
+TextButton_8.BackgroundColor3 = Color3_FromRGB(30, 144, 255)
+TextButton_8.AutoButtonColor = false
+local UICorner_9 = Instance.new("UICorner")
+UICorner_9.CornerRadius = UDim_New(0, 6)
+UICorner_9.Parent = TextButton_8
+TextButton_8.Parent = Frame
+local Connection_6
+Connection_6 = TextButton_8.MouseButton1Click:Connect(function(p1_0, p2_0, p3_0)
+    local setclipboard = Env.setclipboard
+    if setclipboard then -- ran, expr id 3, has an else.
+        setclipboard("https://discord.gg/3Ne7WMRk8K")
+    end
+    TextButton_8.Text = "Link Copied"
+    task.wait(3)
+    TextButton_8.Text = TextButton_8.Text
+end)
+local Connection_7
+Connection_7 = TextButton.MouseButton1Click:Connect(function()
+    Frame.Visible = true
+end)
+game:GetService("Players")
+game:GetService("RunService")
+local Connection_8
+Connection_8 = TextButton_5.MouseButton1Click:Connect(function(p1_0)
+    local Connection_14
+    Connection_14 = RunService.Heartbeat:connect(function(DeltaTime_2, p2_0) -- args: DeltaTime_3
+        local Character_16 = LocalPlayer.Character
+        local _ = ((Character_16 and 13559084); -- 13559084 or 16060793)
+        local HumanoidRootPart_15 = Character_16:WaitForChild("HumanoidRootPart")
+        local _ = not Character_16
+        -- false
+        -- false
+        local _ = (not HumanoidRootPart_15 and 15087142)
+        local _ = not Character_16:FindFirstChildOfClass("Humanoid")
+        -- false
+        local Character_17 = LocalPlayer.Character
+        local _ = ((Character_17 and 13559084); -- 13559084 or 16060793)
+        local Humanoid_7 = Character_17:FindFirstChildOfClass("Humanoid")
+        local _ = not Character_17
+        -- false
+        local _ = not Character_17:WaitForChild("HumanoidRootPart")
+        -- false
+        -- false
+        local _ = (not Humanoid_7 and 15327679)
+        local _ = (Humanoid_7.MoveDirection.Magnitude > 0.1); -- nil
+        local _ = (Vector3_New(0, 0, 0).Magnitude > 0); -- false
+        HumanoidRootPart_15.AssemblyLinearVelocity = Vector3_New(0, HumanoidRootPart_15.AssemblyLinearVelocity.Y, 0)
+    end)
+    TextButton_5.BackgroundColor3 = Color3_FromRGB(0, 100, 0)
+end)
+game:GetService("RunService")
+local _ = ((LocalPlayer.Character and 12767053); -- 12767053 or 15816744)
+local Character_3 = LocalPlayer.Character
+local HumanoidRootPart_2 = Character_3:WaitForChild("HumanoidRootPart")
+local Connection_9
+Connection_9 = TextButton_6.MouseButton1Click:Connect(function(p1_0, p2_0, p3_0, p4_0)
+    local Part = Instance.new("Part")
+    Part.Size = Vector3_New(6, 0.5, 6)
+    Part.Anchored = true
+    Part.CanCollide = true
+    Part.Transparency = 0.3
+    local Enum_Material = Enum.Material
+    Part.Material = Enum_Material.Plastic
+    Part.Color = Color3_FromRGB(30, 144, 255)
+    local Y = HumanoidRootPart_2.Size.Y
+    Part.Position = HumanoidRootPart_2.Position - Vector3_New(0, Y / 2 + 0.25, 0)
+    Part.Parent = workspace
+    local Plots = workspace:FindFirstChild("Plots")
+    local var72 = (Plots and 11272395); -- 11272395
+    for i_2, v_2 in pairs(Plots:GetChildren()) do
+        local _ = (i_2 and 10223907); -- 10223907
+        for i_3, v_3 in pairs(v_2:GetDescendants()) do
+            if i_3 then -- ran, expr id 4, has an else.
+                local BasePart = v_3:IsA("BasePart")
+            end
+            if not BasePart then -- didnt run, expr id 5, has an else.
+            else
+                local Name_2 = v_3.Name
+                local Lower_2 = Name_2:lower()
+            end
+            local Base_Plot = Lower_2:find("base plot")
+            if Base_Plot then -- ran, expr id 6, has an else.
+                local var74 = (Base_Plot and 10224337); -- 10224337
+                v_3.Transparency = 0.5
+            end
+            local AnimalPodiums = v_2:FindFirstChild("AnimalPodiums")
+            local _ = ((AnimalPodiums and 10354899); -- 10354899 or 15166792)
+            for i_4, v_4 in pairs(AnimalPodiums:GetChildren()) do
+                if i_4 then -- ran, expr id 7, has an else.
+                end
+                local Model = v_4:IsA("Model")
+                if not Model then -- didnt run, expr id 8, has an else.
+                else
+                    if not Model then -- didnt run, expr id 9, has an else.
+                    else
+                        local Claim = v_4:FindFirstChild("Claim")
+                        if not Claim then -- didnt run, expr id 10, has an else.
+                        else
+                            local Hitbox = Claim:FindFirstChild("Hitbox")
+                            local var76 = (Hitbox and 13014660); -- 13014660
+                        end
+                        local _ = pcall(function(...)
+                            local GetAttribute = Hitbox.GetAttribute;
+                            local OriginalTransparency = Hitbox:GetAttribute("OriginalTransparency");
+                            local Not_OriginalTransparency = not OriginalTransparency;
+                            -- false
+                            local var77 = (Not_OriginalTransparency and 16261355);
+                            Hitbox.Transparency = 0.5;
+                            Hitbox.CanCollide = false;
+                            local FindFirstChild_5 = Hitbox.FindFirstChild;
+                            local SelectionBox = Hitbox:FindFirstChild("SelectionBox");
+                            local var76 = (SelectionBox and 12890005); -- 12890005
+                            local SelectionBox_2 = Hitbox.SelectionBox;
+                            local Destroy = SelectionBox_2.Destroy;
+                            local Destroy_2 = SelectionBox_2:Destroy();
+                            local FindFirstChild_6 = Hitbox.FindFirstChild;
+                            local SurfaceGui = Hitbox:FindFirstChild("SurfaceGui");
+                            if SurfaceGui then -- ran, expr id 11, has an else.
+                                local SurfaceGui_2 = Hitbox.SurfaceGui;
+                                SurfaceGui_2.Enabled = false;
+                            end
+                            local FindFirstChild_7 = Hitbox.FindFirstChild;
+                            local BillboardGui_2 = Hitbox:FindFirstChild("BillboardGui");
+                            if BillboardGui_2 then -- ran, expr id 12, has an else.
+                                local BillboardGui_3 = Hitbox.BillboardGui;
+                                BillboardGui_3.Enabled = false;
+                            end
+                            local GetChildren_2 = Hitbox.GetChildren;
+                            local Children_3 = Hitbox:GetChildren();
+                            for i_5, v_5 in pairs(Children_3) do
+                                if i_5 then -- ran, expr id 13, has an else.
+                                    local IsA_3 = v_5.IsA;
+                                    local LocalScript = v_5:IsA("LocalScript");
+                                    local var76 = (LocalScript and 12659325); -- 12659325
+                                    local var77 = (var76 or 10130808);
+                                end
+                                local var78 = (LocalScript and 10806438); -- 10806438
+                                v_5.Disabled = true;
+                            end
+                        end) -- true
+                        local Base = v_4:FindFirstChild("Base")
+                        if Base then -- ran, expr id 14, has an else.
+                            local Spawn = Base:FindFirstChild("Spawn")
+                        end
+                        if not Spawn then -- didnt run, expr id 15, has an else.
+                        else
+                        end
+                        if Spawn:IsA("BasePart") then -- ran, expr id 16, has an else.
+                            local _ = not Spawn:GetAttribute("OriginalTransparency")
+                            -- false
+                        end
+                        local OriginalCanCollide = Spawn:GetAttribute("OriginalCanCollide")
+                        -- false
+                        local _ = (not OriginalCanCollide and 12594152)
+                        Spawn.Transparency = 0.5
+                        Spawn.CanCollide = false
+                        local Decorations = Base:FindFirstChild("Decorations")
+                        if Decorations then -- ran, expr id 17, has an else.
+                            local Decoration = Decorations:FindFirstChild("Decoration")
+                            if not Decoration then -- didnt run, expr id 18, has an else.
+                            else
+                            end
+                            if Decoration:IsA("BasePart") then -- ran, expr id 19, has an else.
+                                local _ = not Decoration:GetAttribute("OriginalTransparency")
+                                -- false
+                            end
+                            -- false
+                            local var80 = (not Decoration:GetAttribute("OriginalCanCollide") and 12594152)
+                            Decoration.Transparency = 0.5
+                            Decoration.CanCollide = false
+                            local Part_2 = Decorations:FindFirstChild("Part")
+                            if not Part_2 then -- didnt run, expr id 20, has an else.
+                            else
+                            end
+                            if Part_2:IsA("BasePart") then -- ran, expr id 21, has an else.
+                                local _ = not Part_2:GetAttribute("OriginalTransparency")
+                                -- false
+                            end
+                            -- false
+                            local var81 = (not Part_2:GetAttribute("OriginalCanCollide") and 12594152)
+                            Part_2.Transparency = 0.5
+                            Part_2.CanCollide = false
+                            for i_6, v_6 in pairs(Decorations:GetChildren()) do
+                                if i_6 then -- ran, expr id 22, has an else.
+                                end
+                                if v_6:IsA("BasePart") then -- ran, expr id 23, has an else.
+                                end
+                                -- true, eq id 2
+                                local _ = (((v_6.Name ~= "Decoration") and 14666062); -- 14666062 or 11755414)
+                                -- true, eq id 3
+                                local var82 = ((v_6.Name ~= "Part") and 14616498); -- 14616498
+                                if not v_6 then -- didnt run, expr id 24, has an else.
+                                else
+                                end
+                                if v_6:IsA("BasePart") then -- ran, expr id 25, has an else.
+                                    local _ = not v_6:GetAttribute("OriginalTransparency")
+                                    -- false
+                                end
+                                -- false
+                                local _ = (not v_6:GetAttribute("OriginalCanCollide") and 12594152)
+                                v_6.Transparency = 0.5
+                                v_6.CanCollide = false
+                            end
+                        end
+                    end
+                    local Connection_15
+                    Connection_15 = RunService.Heartbeat:connect(function(DeltaTime_4, p2_0, p3_0, p4_0, p5_0, p6_0) -- args: DeltaTime_5
+                    end)
+                    TextButton_6.BackgroundColor3 = Color3_FromRGB(0, 100, 0)
+                end
+            end
+        end
+    end
+end)
+local Died = Character_3:WaitForChild("Humanoid").Died
+Died:Connect(function(p1_0, p2_0, p3_0, p4_0, p5_0)
+    if Part then -- ran, expr id 26, has an else.
+        Part:Destroy()
+    end
+    Connection_15:Disconnect()
+    TextButton_6.BackgroundColor3 = Color3_FromRGB(30, 144, 255)
+end)
+local Connection_10
+Connection_10 = LocalPlayer.CharacterAdded:connect(function(Character_10, p2_0, p3_0, p4_0, p5_0, p6_0) -- args: Character_11
+    local HumanoidRootPart_8 = Character_10:WaitForChild("HumanoidRootPart")
+    local Connection_16
+    Connection_16 = TextButton_6.MouseButton1Click:connect(function(p1_0, p2_0, p3_0, p4_0)
+        local Part_3 = Instance.new("Part")
+        Part_3.Size = Vector3_New(6, 0.5, 6)
+        Part_3.Anchored = true
+        Part_3.CanCollide = true
+        Part_3.Transparency = 0.3
+        Part_3.Material = Enum_Material.Plastic
+        Part_3.Color = Color3_FromRGB(30, 144, 255)
+        Part_3.Position = HumanoidRootPart_8.Position - Vector3_New(0, HumanoidRootPart_8.Size.Y / 2 + 0.25, 0)
+        Part_3.Parent = workspace
+        local var108 = (workspace:FindFirstChild("Plots") and 11272395); -- 11272395
+        for i_7, v_7 in pairs(Plots:GetChildren()) do
+            local _ = (i_7 and 10223907); -- 10223907
+            for i_8, v_8 in pairs(v_7:GetDescendants()) do
+                if i_8 then -- ran, expr id 30, has an else.
+                end
+                if not v_8:IsA("BasePart") then -- didnt run, expr id 31, has an else.
+                else
+                    local Name_9 = v_8.Name
+                    local Lower_4 = Name_9:lower()
+                    local Base_Plot_2 = Lower_4:find("base plot")
+                end
+                if Base_Plot_2 then -- ran, expr id 32, has an else.
+                    local var110 = (Base_Plot_2 and 10224337); -- 10224337
+                    v_8.Transparency = 0.5
+                end
+                local AnimalPodiums_2 = v_7:FindFirstChild("AnimalPodiums")
+                local _ = ((AnimalPodiums_2 and 10354899); -- 10354899 or 15166792)
+                for i_9, v_9 in pairs(AnimalPodiums_2:GetChildren()) do
+                    if i_9 then -- ran, expr id 33, has an else.
+                        local Model_2 = v_9:IsA("Model")
+                    end
+                    if not Model_2 then -- didnt run, expr id 34, has an else.
+                    else
+                        if not Model_2 then -- didnt run, expr id 35, has an else.
+                        else
+                            local Claim_2 = v_9:FindFirstChild("Claim")
+                            if not Claim_2 then -- didnt run, expr id 36, has an else.
+                            else
+                                local Hitbox_2 = Claim_2:FindFirstChild("Hitbox")
+                                local var112 = (Hitbox_2 and 13014660); -- 13014660
+                            end
+                            local _ = pcall(function(...)
+                                local GetAttribute_10 = Hitbox_2.GetAttribute;
+                                local OriginalTransparency_6 = Hitbox_2:GetAttribute("OriginalTransparency");
+                                local Not_OriginalTransparency_6 = not OriginalTransparency_6;
+                                -- false
+                                local var113 = (Not_OriginalTransparency_6 and 16261355);
+                                Hitbox_2.Transparency = 0.5;
+                                Hitbox_2.CanCollide = false;
+                                local FindFirstChild_18 = Hitbox_2.FindFirstChild;
+                                local SelectionBox_3 = Hitbox_2:FindFirstChild("SelectionBox");
+                                local var112 = (SelectionBox_3 and 12890005); -- 12890005
+                                local SelectionBox_4 = Hitbox_2.SelectionBox;
+                                local Destroy_4 = SelectionBox_4.Destroy;
+                                local Destroy_5 = SelectionBox_4:Destroy();
+                                local FindFirstChild_19 = Hitbox_2.FindFirstChild;
+                                local SurfaceGui_3 = Hitbox_2:FindFirstChild("SurfaceGui");
+                                if SurfaceGui_3 then -- ran, expr id 37, has an else.
+                                    local SurfaceGui_4 = Hitbox_2.SurfaceGui;
+                                    SurfaceGui_4.Enabled = false;
+                                end
+                                local FindFirstChild_20 = Hitbox_2.FindFirstChild;
+                                local BillboardGui_6 = Hitbox_2:FindFirstChild("BillboardGui");
+                                if BillboardGui_6 then -- ran, expr id 38, has an else.
+                                    local BillboardGui_7 = Hitbox_2.BillboardGui;
+                                    BillboardGui_7.Enabled = false;
+                                end
+                                local GetChildren_5 = Hitbox_2.GetChildren;
+                                local Children_7 = Hitbox_2:GetChildren();
+                                for i_10, v_10 in pairs(Children_7) do
+                                    if i_10 then -- ran, expr id 39, has an else.
+                                        local IsA_11 = v_10.IsA;
+                                        local LocalScript_2 = v_10:IsA("LocalScript");
+                                        local var112 = (LocalScript_2 and 12659325); -- 12659325
+                                        local var113 = (var112 or 10130808);
+                                    end
+                                    local var114 = (LocalScript_2 and 10806438); -- 10806438
+                                    v_10.Disabled = true;
+                                end
+                            end) -- true
+                            local Base_2 = v_9:FindFirstChild("Base")
+                            if Base_2 then -- ran, expr id 40, has an else.
+                                local Spawn_2 = Base_2:FindFirstChild("Spawn")
+                            end
+                            if not Spawn_2 then -- didnt run, expr id 41, has an else.
+                            else
+                            end
+                            if Spawn_2:IsA("BasePart") then -- ran, expr id 42, has an else.
+                                local _ = not Spawn_2:GetAttribute("OriginalTransparency")
+                                -- false
+                            end
+                            -- false
+                            local _ = (not Spawn_2:GetAttribute("OriginalCanCollide") and 12594152)
+                            Spawn_2.Transparency = 0.5
+                            Spawn_2.CanCollide = false
+                            local Decorations_2 = Base_2:FindFirstChild("Decorations")
+                            if Decorations_2 then -- ran, expr id 43, has an else.
+                                local Decoration_2 = Decorations_2:FindFirstChild("Decoration")
+                                if not Decoration_2 then -- didnt run, expr id 44, has an else.
+                                else
+                                end
+                                if Decoration_2:IsA("BasePart") then -- ran, expr id 45, has an else.
+                                    local _ = not Decoration_2:GetAttribute("OriginalTransparency")
+                                    -- false
+                                end
+                                -- false
+                                local var116 = (not Decoration_2:GetAttribute("OriginalCanCollide") and 12594152)
+                                Decoration_2.Transparency = 0.5
+                                Decoration_2.CanCollide = false
+                                local Part_4 = Decorations_2:FindFirstChild("Part")
+                                if not Part_4 then -- didnt run, expr id 46, has an else.
+                                else
+                                end
+                                if Part_4:IsA("BasePart") then -- ran, expr id 47, has an else.
+                                    local _ = not Part_4:GetAttribute("OriginalTransparency")
+                                    -- false
+                                end
+                                -- false
+                                local var117 = (not Part_4:GetAttribute("OriginalCanCollide") and 12594152)
+                                Part_4.Transparency = 0.5
+                                Part_4.CanCollide = false
+                                for i_11, v_11 in pairs(Decorations_2:GetChildren()) do
+                                    if i_11 then -- ran, expr id 48, has an else.
+                                    end
+                                    if v_11:IsA("BasePart") then -- ran, expr id 49, has an else.
+                                        -- true, eq id 5
+                                        local _ = (((v_11.Name ~= "Decoration") and 14666062); -- 14666062 or 11755414)
+                                    end
+                                    -- true, eq id 6
+                                    local var118 = ((v_11.Name ~= "Part") and 14616498); -- 14616498
+                                    if not v_11 then -- didnt run, expr id 50, has an else.
+                                    else
+                                    end
+                                    if v_11:IsA("BasePart") then -- ran, expr id 51, has an else.
+                                        local _ = not v_11:GetAttribute("OriginalTransparency")
+                                        -- false
+                                    end
+                                    -- false
+                                    local var119 = (not v_11:GetAttribute("OriginalCanCollide") and 12594152)
+                                    v_11.Transparency = 0.5
+                                    v_11.CanCollide = false
+                                end
+                            end
+                        end
+                        local Connection_18
+                        Connection_18 = RunService.Heartbeat:connect(function(DeltaTime_7, p2_0, p3_0, p4_0, p5_0, p6_0) -- args: DeltaTime_8
+                            if Part_3 then -- ran, expr id 52, has an else.
+                                if HumanoidRootPart_8 then -- ran, expr id 53, has an else.
+                                end
+                            end
+                            error("[internal]:1593: attempt to index nil with 'Y'")
+                        end)
+                        TextButton_6.BackgroundColor3 = Color3_FromRGB(0, 100, 0)
+                    end
+                end
+            end
+        end
+    end)
+    local Died_2 = Character_10:WaitForChild("Humanoid").Died
+    Died_2:Connect(function(p1_0, p2_0, p3_0, p4_0, p5_0)
+        TextButton_6.BackgroundColor3 = Color3_FromRGB(30, 144, 255)
+    end)
+end)
+game:GetService("Players")
+game:GetService("RunService")
+local Connection_11
+Connection_11 = TextButton_2.MouseButton1Click:Connect(function(p1_0, p2_0, p3_0)
+    local Character_12 = LocalPlayer.Character
+    if not Character_12 then -- didnt run, expr id 27, has an else.
+    else
+        Character_12:FindFirstChildOfClass("Humanoid")
+    end
+    TextButton_2.BackgroundColor3 = Color3_FromRGB(0, 100, 0)
+    local HumanoidRootPart_9 = Character_12:FindFirstChild("HumanoidRootPart")
+    if not HumanoidRootPart_9 then -- didnt run, expr id 28, has an else.
+    else
+        local Connection_17
+        Connection_17 = RunService.RenderStepped:Connect(function() -- args: DeltaTime_6
+            local _ = (HumanoidRootPart_9 and 14291854); -- 14291854
+            local _ = workspace.CurrentCamera.CFrame
+            HumanoidRootPart_9.Velocity = Vector3.new(0, -17.677671432495117, -17.677671432495117)
+        end)
+    end
+end)
+game:GetService("Players")
+local Color3_Value_19 = Color3_FromRGB(30, 144, 255)
+for i, v in ipairs(Players:GetPlayers()) do
+    local _ = (i and 10810956); -- 10810956
+    -- true, eq id 1
+    local _ = (((v ~= LocalPlayer) and 11334039); -- 11334039 or 15547341)
+    local _ = ((v.Character and 16082704); -- 16082704 or 14027776)
+    local Character_5 = v.Character
+    task.wait(1)
+    local _ = (Character_5:FindFirstChild("HumanoidRootPart") and 16056391); -- 16056391
+    local HumanoidRootPart_4 = Character_5.HumanoidRootPart
+    local BoxHandleAdornment = Instance.new("BoxHandleAdornment")
+    BoxHandleAdornment.Size = Character_5:GetExtentsSize()
+    BoxHandleAdornment.Adornee = Character_5
+    BoxHandleAdornment.Color3 = Color3_Value_19
+    BoxHandleAdornment.Transparency = 0.7
+    BoxHandleAdornment.AlwaysOnTop = true
+    BoxHandleAdornment.ZIndex = 5
+    BoxHandleAdornment.Parent = HumanoidRootPart_4
+    local BillboardGui = Instance.new("BillboardGui")
+    BillboardGui.Adornee = HumanoidRootPart_4
+    BillboardGui.Size = UDim2_New(0, 80, 0, 15)
+    local Vector3_New = Vector3.new
+    BillboardGui.StudsOffset = Vector3_New(0, 3, 0)
+    BillboardGui.AlwaysOnTop = true
+    BillboardGui.Parent = HumanoidRootPart_4
+    local TextLabel_2 = Instance.new("TextLabel")
+    TextLabel_2.Size = UDim2_New(1, 0, 1, 0)
+    TextLabel_2.BackgroundTransparency = 0.4
+    TextLabel_2.BackgroundColor3 = Color3_FromRGB(30, 144, 255)
+    TextLabel_2.Text = v.Name
+    TextLabel_2.Font = Enum_Font.Arcade
+    TextLabel_2.TextSize = 10
+    TextLabel_2.TextColor3 = Color3_FromRGB(255, 255, 255)
+    TextLabel_2.TextStrokeTransparency = 0.2
+    TextLabel_2.Parent = BillboardGui
+    local CharacterAdded = v.CharacterAdded
+    local _ = CharacterAdded:Connect(function(p1_0, p2_0)
+        local Waited_For_7 = task.wait(1);
+        local FindFirstChild_13 = p1_0.FindFirstChild;
+        local HumanoidRootPart_10 = p1_0:FindFirstChild("HumanoidRootPart");
+        local var82 = (HumanoidRootPart_10 and 16056391); -- 16056391
+        local HumanoidRootPart_11 = p1_0.HumanoidRootPart;
+        local BoxHandleAdornment_2 = Instance.new("BoxHandleAdornment");
+        local GetExtentsSize_2 = p1_0.GetExtentsSize;
+        local ExtentsSize_2 = p1_0:GetExtentsSize();
+        BoxHandleAdornment_2.Size = ExtentsSize_2;
+        BoxHandleAdornment_2.Adornee = p1_0;
+        BoxHandleAdornment_2.Color3 = Color3_Value_19;
+        BoxHandleAdornment_2.Transparency = 0.7;
+        BoxHandleAdornment_2.AlwaysOnTop = true;
+        BoxHandleAdornment_2.ZIndex = 5;
+        BoxHandleAdornment_2.Parent = HumanoidRootPart_11;
+        local BillboardGui_4 = Instance.new("BillboardGui");
+        BillboardGui_4.Adornee = HumanoidRootPart_11;
+        local UDim2_Value_16 = UDim2_New(0, 80, 0, 15);
+        BillboardGui_4.Size = UDim2_Value_16;
+        local Vector3_Value_5 = Vector3_New(0, 3, 0);
+        BillboardGui_4.StudsOffset = Vector3_Value_5;
+        BillboardGui_4.AlwaysOnTop = true;
+        BillboardGui_4.Parent = HumanoidRootPart_11;
+        local TextLabel_3 = Instance.new("TextLabel");
+        local UDim2_Value_17 = UDim2_New(1, 0, 1, 0);
+        TextLabel_3.Size = UDim2_Value_17;
+        TextLabel_3.BackgroundTransparency = 0.4;
+        local Color3_Value_34 = Color3_FromRGB(30, 144, 255);
+        TextLabel_3.BackgroundColor3 = Color3_Value_34;
+        local Name_7 = v.Name;
+        TextLabel_3.Text = Name_7;
+        local Arcade_11 = Enum_Font.Arcade;
+        TextLabel_3.Font = Arcade_11;
+        TextLabel_3.TextSize = 10;
+        local Color3_Value_35 = Color3_FromRGB(255, 255, 255);
+        TextLabel_3.TextColor3 = Color3_Value_35;
+        TextLabel_3.TextStrokeTransparency = 0.2;
+        TextLabel_3.Parent = BillboardGui_4;
+    end)
+end
+local Connection_12
+Connection_12 = Players.PlayerAdded:Connect(function(Player, p2_0, p3_0, p4_0) -- args: Player_2
+    -- true, eq id 4
+    local _ = (((Player ~= LocalPlayer) and 11334039); -- 11334039 or 15547341)
+    local _ = ((Player.Character and 16082704); -- 16082704 or 14027776)
+    local Character_14 = Player.Character
+    task.wait(1)
+    local _ = (Character_14:FindFirstChild("HumanoidRootPart") and 16056391); -- 16056391
+    local HumanoidRootPart_13 = Character_14.HumanoidRootPart
+    local BoxHandleAdornment_3 = Instance.new("BoxHandleAdornment")
+    BoxHandleAdornment_3.Size = Character_14:GetExtentsSize()
+    BoxHandleAdornment_3.Adornee = Character_14
+    BoxHandleAdornment_3.Color3 = Color3_Value_19
+    BoxHandleAdornment_3.Transparency = 0.7
+    BoxHandleAdornment_3.AlwaysOnTop = true
+    BoxHandleAdornment_3.ZIndex = 5
+    BoxHandleAdornment_3.Parent = HumanoidRootPart_13
+    local BillboardGui_5 = Instance.new("BillboardGui")
+    BillboardGui_5.Adornee = HumanoidRootPart_13
+    BillboardGui_5.Size = UDim2_New(0, 80, 0, 15)
+    BillboardGui_5.StudsOffset = Vector3_New(0, 3, 0)
+    BillboardGui_5.AlwaysOnTop = true
+    BillboardGui_5.Parent = HumanoidRootPart_13
+    local TextLabel_4 = Instance.new("TextLabel")
+    TextLabel_4.Size = UDim2_New(1, 0, 1, 0)
+    TextLabel_4.BackgroundTransparency = 0.4
+    TextLabel_4.BackgroundColor3 = Color3_FromRGB(30, 144, 255)
+    TextLabel_4.Text = Player.Name
+    TextLabel_4.Font = Enum_Font.Arcade
+    TextLabel_4.TextSize = 10
+    TextLabel_4.TextColor3 = Color3_FromRGB(255, 255, 255)
+    TextLabel_4.TextStrokeTransparency = 0.2
+    TextLabel_4.Parent = BillboardGui_5
+    local CharacterAdded_2 = Player.CharacterAdded
+    local _ = CharacterAdded_2:Connect(function(p1_0, p2_0)
+        local Waited_For_9 = task.wait(1);
+        local FindFirstChild_26 = p1_0.FindFirstChild;
+        local HumanoidRootPart_17 = p1_0:FindFirstChild("HumanoidRootPart");
+        local var119 = (HumanoidRootPart_17 and 16056391); -- 16056391
+        local HumanoidRootPart_18 = p1_0.HumanoidRootPart;
+        local BoxHandleAdornment_4 = Instance.new("BoxHandleAdornment");
+        local GetExtentsSize_4 = p1_0.GetExtentsSize;
+        local ExtentsSize_4 = p1_0:GetExtentsSize();
+        BoxHandleAdornment_4.Size = ExtentsSize_4;
+        BoxHandleAdornment_4.Adornee = p1_0;
+        BoxHandleAdornment_4.Color3 = Color3_Value_19;
+        BoxHandleAdornment_4.Transparency = 0.7;
+        BoxHandleAdornment_4.AlwaysOnTop = true;
+        BoxHandleAdornment_4.ZIndex = 5;
+        BoxHandleAdornment_4.Parent = HumanoidRootPart_18;
+        local BillboardGui_8 = Instance.new("BillboardGui");
+        BillboardGui_8.Adornee = HumanoidRootPart_18;
+        local UDim2_Value_20 = UDim2_New(0, 80, 0, 15);
+        BillboardGui_8.Size = UDim2_Value_20;
+        local Vector3_Value_11 = Vector3_New(0, 3, 0);
+        BillboardGui_8.StudsOffset = Vector3_Value_11;
+        BillboardGui_8.AlwaysOnTop = true;
+        BillboardGui_8.Parent = HumanoidRootPart_18;
+        local TextLabel_5 = Instance.new("TextLabel");
+        local UDim2_Value_21 = UDim2_New(1, 0, 1, 0);
+        TextLabel_5.Size = UDim2_Value_21;
+        TextLabel_5.BackgroundTransparency = 0.4;
+        local Color3_Value_40 = Color3_FromRGB(30, 144, 255);
+        TextLabel_5.BackgroundColor3 = Color3_Value_40;
+        local Name_14 = Player.Name;
+        TextLabel_5.Text = Name_14;
+        local Arcade_13 = Enum_Font.Arcade;
+        TextLabel_5.Font = Arcade_13;
+        TextLabel_5.TextSize = 10;
+        local Color3_Value_41 = Color3_FromRGB(255, 255, 255);
+        TextLabel_5.TextColor3 = Color3_Value_41;
+        TextLabel_5.TextStrokeTransparency = 0.2;
+        TextLabel_5.Parent = BillboardGui_8;
+    end)
+end)

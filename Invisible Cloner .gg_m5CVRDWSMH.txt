@@ -1,0 +1,82 @@
+-- Deobfed by mango hub
+local var1 = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+local var2 = workspace.DescendantAdded:Connect(function(descendant)
+    task.wait(0.2)
+end)
+local var3 = workspace.ChildAdded:Connect(function(child)
+    task.wait(0.2)
+end)
+print("🟡 Clone Skeleton ESP monitoring active - will track moving clones!")
+local var4 = Instance.new("ScreenGui")
+var4.Name = "EquipCloakGUI"
+var4.ResetOnSpawn = false
+var4.Parent = var1
+local var5 = Instance.new("Frame")
+var5.Size = UDim2.new(0, 200, 0, 80)
+var5.Position = UDim2.new(0.5, -100, 0.5, -40)
+var5.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+var5.BorderSizePixel = 0
+var5.Active = true
+var5.Draggable = true
+var5.Parent = var4
+local var6 = Instance.new("UICorner")
+var6.CornerRadius = UDim.new(0, 10)
+var6.Parent = var5
+local var7 = Instance.new("TextLabel")
+var7.Size = UDim2.new(1, 0, 0, 25)
+var7.Position = UDim2.new(0, 0, 0, 0)
+var7.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+var7.TextColor3 = Color3.fromRGB(200, 200, 200)
+var7.Text = "SCRIPT HAVEN | INVISBLE CLONER"
+var7.Font = Enum.Font.GothamBold
+var7.TextSize = 12
+var7.BorderSizePixel = 0
+var7.Parent = var5
+local var8 = Instance.new("UICorner")
+var8.CornerRadius = UDim.new(0, 10)
+var8.Parent = var7
+local var9 = Instance.new("TextButton")
+var9.Size = UDim2.new(1, -20, 0, 45)
+var9.Position = UDim2.new(0, 10, 0, 30)
+var9.BackgroundColor3 = Color3.fromRGB(100, 50, 200)
+var9.TextColor3 = Color3.fromRGB(255, 255, 255)
+var9.Text = "Activate Combo"
+var9.Font = Enum.Font.GothamBold
+var9.TextSize = 16
+var9.BorderSizePixel = 0
+var9.Parent = var5
+local var10 = Instance.new("UICorner")
+var10.CornerRadius = UDim.new(0, 8)
+var10.Parent = var9
+local var11 = var9.MouseButton1Click:Connect(function()
+    local var12 = game.Players.LocalPlayer.Character:FindFirstChild("Humanoid")
+    local var13 = game.Players.LocalPlayer:WaitForChild("Backpack")
+    for _, child in var13:GetChildren() do
+        local var14 = var13:FindFirstChild("Invisibility Cloak")
+        var12:UnequipTools()
+        wait(0.05)
+        var12:EquipTool(var14)
+        wait(0.05)
+        local var15 = var14:Activate()
+        var9.Text = "Activated!"
+        var9.BackgroundColor3 = Color3.fromRGB(0, 200, 0)
+        wait(1)
+        local var16 = var13:FindFirstChild("Quantum Cloner")
+        var12:EquipTool(var16)
+        var9.Text = "Switched to Cloner!"
+        local var17 = var16:Activate()
+        var9.Text = "Cloner Activated!"
+        wait(0.3)
+        var9.Text = "Activate Combo"
+        var9.BackgroundColor3 = Color3.fromRGB(100, 50, 200)
+    end
+end)
+local var18 = var9.MouseEnter:Connect(function(...)
+    var9.BackgroundColor3 = Color3.fromRGB(80, 40, 180)
+end)
+local var19 = var9.MouseLeave:Connect(function(...)
+    var9.BackgroundColor3 = Color3.fromRGB(100, 50, 200)
+end)
+print("Invisibility Combo GUI loaded with Skeleton ESP!")
+print("🟡 Clones will be shown with neon yellow skeleton!")
+print("Drag by the title bar!")

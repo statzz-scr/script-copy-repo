@@ -1,0 +1,388 @@
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
+
+local LocalPlayer = Players.LocalPlayer
+local isMinimized = false
+local originalSize = UDim2.new(0, 280, 0, 160)
+local minimizedSize = UDim2.new(0, 280, 0, 40)
+
+local DesyncFlags = {
+    LargeReplicatorEnabled9 = true, 
+    GameNetDontSendRedundantNumTimes = 1, 
+    MaxTimestepMultiplierAcceleration = 2147483647, 
+    InterpolationFrameVelocityThresholdMillionth = 5, 
+    CheckPVDifferencesForInterpolationMinRotVelThresholdRadsPerSecHundredth = 1, 
+    TimestepArbiterVelocityCriteriaThresholdTwoDt = 2147483646, 
+    GameNetPVHeaderLinearVelocityZeroCutoffExponent = -5000, 
+    TimestepArbiterHumanoidTurningVelThreshold = 1, 
+    LargeReplicatorSerializeWrite4 = true, 
+    SimExplicitlyCappedTimestepMultiplier = 2147483646, 
+    InterpolationFrameRotVelocityThresholdMillionth = 5, 
+    ServerMaxBandwith = 52, 
+    LargeReplicatorSerializeRead3 = true, 
+    GameNetDontSendRedundantDeltaPositionMillionth = 1, 
+    PhysicsSenderMaxBandwidthBps = 20000, 
+    CheckPVCachedVelThresholdPercent = 10, 
+    NextGenReplicatorEnabledWrite4 = true, 
+    LargeReplicatorWrite5 = true, 
+    MaxMissedWorldStepsRemembered = -2147483648, 
+    StreamJobNOUVolumeCap = 2147483647, 
+    CheckPVLinearVelocityIntegrateVsDeltaPositionThresholdPercent = 1, 
+    DisableDPIScale = true, 
+    WorldStepMax = 30, 
+    InterpolationFramePositionThresholdMillionth = 5, 
+    MaxAcceptableUpdateDelay = 1, 
+    TimestepArbiterOmegaThou = 1073741823, 
+    CheckPVCachedRotVelThresholdPercent = 10, 
+    StreamJobNOUVolumeLengthCap = 2147483647, 
+    S2PhysicsSenderRate = 15000, 
+    MaxTimestepMultiplierBuoyancy = 2147483647, 
+    SimOwnedNOUCountThresholdMillionth = 2147483647, 
+    ReplicationFocusNouExtentsSizeCutoffForPauseStuds = 2147483647, 
+    LargeReplicatorRead5 = true, 
+    CheckPVDifferencesForInterpolationMinVelThresholdStudsPerSecHundredth = 1, 
+    MaxDataPacketPerSend = 2147483647, 
+    MaxTimestepMultiplierContstraint = 2147483647, 
+    DebugSendDistInSteps = -2147483648, 
+    GameNetPVHeaderRotationalVelocityZeroCutoffExponent = -5000, 
+    AngularVelociryLimit = 360
+}
+
+local function quantumDesync()
+    local Backpack = LocalPlayer:WaitForChild("Backpack")
+    local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+    local Humanoid = Character:WaitForChild("Humanoid")
+    local QuantumCloner = Backpack:FindFirstChild("Quantum Cloner") or Character:FindFirstChild("Quantum Cloner")
+    
+    if not QuantumCloner then
+        return false
+    end
+    
+    if Character:FindFirstChild(QuantumCloner.Name) ~= QuantumCloner then
+        Humanoid:EquipTool(QuantumCloner)
+    end
+    
+    local Packages = ReplicatedStorage:WaitForChild("Packages", 5)
+    local Net = Packages and Packages:FindFirstChild("Net")
+    
+    if not Net then
+        return false
+    end
+    
+    local UseItem = Net:FindFirstChild("RE/UseItem")
+    local OnTeleport = Net:FindFirstChild("RE/QuantumCloner/OnTeleport")
+    
+    if UseItem and OnTeleport then
+        UseItem:FireServer()
+        OnTeleport:FireServer()
+        
+        local Notify = ReplicatedStorage.Packages.Net["RE/NotificationService/Notify"]
+        for _ = 1, 3 do
+            firesignal(Notify.OnClientEvent, "<font color=\"#db1d1d\">Porxiai Hub On Top!!!</font>", 5, "Sounds.Sfx.Success")
+        end
+        
+        for flagName, flagValue in pairs(DesyncFlags) do
+            pcall(function()
+                setfflag(tostring(flagName), tostring(flagValue))
+            end)
+        end
+        return true
+    end
+    return false
+end
+
+local function noToolDesync()
+    local sequence = {
+        teleportIndices = {2, 4},
+        sequence = {
+            {flag = "WorldStepsOffsetAdjustRate", value = "-1", delay = 0},
+            {flag = "WorldStepsOffsetAdjustRate", value = "60", delay = 12.57},
+            {flag = "WorldStepsOffsetAdjustRate", value = "-9999999999", delay = 52.14},
+            {flag = "WorldStepsOffsetAdjustRate", value = "-9999999999", delay = 66.15},
+            {flag = "WorldStepsOffsetAdjustRate", value = "-1", delay = 1447.19},
+        }
+    }
+    
+    task.spawn(function()
+        for flagName, flagValue in pairs(DesyncFlags) do
+            pcall(function()
+                setfflag(tostring(flagName), tostring(flagValue))
+            end)
+        end
+        
+        for i, entry in ipairs(sequence.sequence) do
+            if entry.delay > 0 then 
+                task.wait(entry.delay / 1000) 
+            end
+            
+            pcall(function() 
+                setfflag(entry.flag, entry.value) 
+            end)
+            
+            if table.find(sequence.teleportIndices, i) then
+                local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+                local hrp = char:WaitForChild("HumanoidRootPart")
+                if hrp then
+                    local max = 20
+                    hrp.CFrame = hrp.CFrame * CFrame.new(
+                        math.random(-max, max),
+                        0,
+                        math.random(-max, max)
+                    )
+                end
+            end
+        end
+    end)
+end
+
+if isfile and readfile then
+    pcall(function()
+        if isfile("PorxiaiHub_Minimized.txt") then
+            isMinimized = readfile("PorxiaiHub_Minimized.txt") == "true"
+        end
+    end)
+end
+
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "PorxiaiHub"
+ScreenGui.ResetOnSpawn = false
+ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
+
+local MainFrame = Instance.new("Frame")
+MainFrame.Size = isMinimized and minimizedSize or originalSize
+MainFrame.Position = UDim2.new(1, -300, 0, 50)
+MainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+MainFrame.BorderSizePixel = 0
+MainFrame.Active = true
+MainFrame.Draggable = true
+MainFrame.Parent = ScreenGui
+
+local UICorner = Instance.new("UICorner")
+UICorner.CornerRadius = UDim.new(0, 12)
+UICorner.Parent = MainFrame
+
+local UIStroke = Instance.new("UIStroke")
+UIStroke.Thickness = 2
+UIStroke.Color = Color3.fromRGB(50, 50, 50)
+UIStroke.Parent = MainFrame
+
+local TopBar = Instance.new("Frame")
+TopBar.Size = UDim2.new(1, 0, 0, 40)
+TopBar.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
+TopBar.BorderSizePixel = 0
+TopBar.Parent = MainFrame
+
+local TopBarCorner = Instance.new("UICorner")
+TopBarCorner.CornerRadius = UDim.new(0, 12, 0, 0)
+TopBarCorner.Parent = TopBar
+
+local Title = Instance.new("TextLabel")
+Title.Text = "PORXIAI HUB"
+Title.Size = UDim2.new(1, -80, 1, 0)
+Title.Position = UDim2.new(0, 10, 0, 0)
+Title.BackgroundTransparency = 1
+Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+Title.Font = Enum.Font.GothamBold
+Title.TextSize = 16
+Title.TextXAlignment = Enum.TextXAlignment.Left
+Title.Parent = TopBar
+
+local MinimizeButton = Instance.new("TextButton")
+MinimizeButton.Name = "MinimizeButton"
+MinimizeButton.Size = UDim2.new(0, 30, 0, 30)
+MinimizeButton.Position = UDim2.new(1, -70, 0.5, -15)
+MinimizeButton.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+MinimizeButton.Text = isMinimized and "+" or "-"
+MinimizeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+MinimizeButton.Font = Enum.Font.GothamBold
+MinimizeButton.TextSize = 18
+MinimizeButton.AutoButtonColor = true
+MinimizeButton.Parent = TopBar
+
+local MinimizeCorner = Instance.new("UICorner")
+MinimizeCorner.CornerRadius = UDim.new(0, 6)
+MinimizeCorner.Parent = MinimizeButton
+
+local CloseButton = Instance.new("TextButton")
+CloseButton.Name = "CloseButton"
+CloseButton.Size = UDim2.new(0, 30, 0, 30)
+CloseButton.Position = UDim2.new(1, -35, 0.5, -15)
+CloseButton.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+CloseButton.Text = "X"
+CloseButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+CloseButton.Font = Enum.Font.GothamBold
+CloseButton.TextSize = 16
+CloseButton.AutoButtonColor = true
+CloseButton.Parent = TopBar
+
+local CloseCorner = Instance.new("UICorner")
+CloseCorner.CornerRadius = UDim.new(0, 6)
+CloseCorner.Parent = CloseButton
+
+local ContentFrame = Instance.new("Frame")
+ContentFrame.Name = "ContentFrame"
+ContentFrame.Size = UDim2.new(1, -20, 1, -50)
+ContentFrame.Position = UDim2.new(0, 10, 0, 50)
+ContentFrame.BackgroundTransparency = 1
+ContentFrame.Visible = not isMinimized
+ContentFrame.Parent = MainFrame
+
+local QuantumButton = Instance.new("TextButton")
+QuantumButton.Name = "QuantumButton"
+QuantumButton.Size = UDim2.new(1, 0, 0, 40)
+QuantumButton.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+QuantumButton.Text = "QUANTUM DESYNC"
+QuantumButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+QuantumButton.Font = Enum.Font.GothamBold
+QuantumButton.TextSize = 14
+QuantumButton.AutoButtonColor = true
+QuantumButton.Parent = ContentFrame
+
+local QuantumCorner = Instance.new("UICorner")
+QuantumCorner.CornerRadius = UDim.new(0, 8)
+QuantumCorner.Parent = QuantumButton
+
+local NoToolButton = Instance.new("TextButton")
+NoToolButton.Name = "NoToolButton"
+NoToolButton.Size = UDim2.new(1, 0, 0, 40)
+NoToolButton.Position = UDim2.new(0, 0, 0, 50)
+NoToolButton.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+NoToolButton.Text = "NO TOOL DESYNC"
+NoToolButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+NoToolButton.Font = Enum.Font.GothamBold
+NoToolButton.TextSize = 14
+NoToolButton.AutoButtonColor = true
+NoToolButton.Parent = ContentFrame
+
+local NoToolCorner = Instance.new("UICorner")
+NoToolCorner.CornerRadius = UDim.new(0, 8)
+NoToolCorner.Parent = NoToolButton
+
+local StatusText = Instance.new("TextLabel")
+StatusText.Text = "Choose Desync Method"
+StatusText.Size = UDim2.new(1, 0, 0, 20)
+StatusText.Position = UDim2.new(0, 0, 0, 100)
+StatusText.BackgroundTransparency = 1
+StatusText.TextColor3 = Color3.fromRGB(150, 150, 150)
+StatusText.Font = Enum.Font.Gotham
+StatusText.TextSize = 12
+StatusText.TextXAlignment = Enum.TextXAlignment.Center
+StatusText.Parent = ContentFrame
+
+local function toggleMinimize()
+    isMinimized = not isMinimized
+    MinimizeButton.Text = isMinimized and "+" or "-"
+    ContentFrame.Visible = not isMinimized
+    
+    local targetSize = isMinimized and minimizedSize or originalSize
+    TweenService:Create(MainFrame, TweenInfo.new(0.2), {
+        Size = targetSize
+    }):Play()
+    
+    if writefile then
+        pcall(function()
+            writefile("PorxiaiHub_Minimized.txt", tostring(isMinimized))
+        end)
+    end
+end
+
+local function setupButtonHover(button)
+    local originalColor = button.BackgroundColor3
+    
+    button.MouseEnter:Connect(function()
+        button.BackgroundColor3 = originalColor:Lerp(Color3.fromRGB(255, 255, 255), 0.1)
+    end)
+    
+    button.MouseLeave:Connect(function()
+        button.BackgroundColor3 = originalColor
+    end)
+end
+
+setupButtonHover(QuantumButton)
+setupButtonHover(NoToolButton)
+setupButtonHover(MinimizeButton)
+setupButtonHover(CloseButton)
+
+MinimizeButton.MouseButton1Click:Connect(toggleMinimize)
+
+CloseButton.MouseButton1Click:Connect(function()
+    ScreenGui:Destroy()
+end)
+
+QuantumButton.MouseButton1Click:Connect(function()
+    QuantumButton.Text = "RUNNING..."
+    QuantumButton.BackgroundColor3 = Color3.fromRGB(0, 150, 0)
+    
+    task.spawn(function()
+        local success = quantumDesync()
+        
+        if success then
+            StatusText.Text = "Quantum Desync Complete ✓"
+            StatusText.TextColor3 = Color3.fromRGB(0, 200, 0)
+        else
+            StatusText.Text = "Need Quantum Cloner Tool!"
+            StatusText.TextColor3 = Color3.fromRGB(200, 0, 0)
+        end
+        
+        task.wait(1)
+        QuantumButton.Text = "QUANTUM DESYNC"
+        QuantumButton.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+        
+        task.wait(2)
+        StatusText.Text = "Choose Desync Method"
+        StatusText.TextColor3 = Color3.fromRGB(150, 150, 150)
+    end)
+end)
+
+NoToolButton.MouseButton1Click:Connect(function()
+    NoToolButton.Text = "RUNNING..."
+    NoToolButton.BackgroundColor3 = Color3.fromRGB(0, 150, 0)
+    StatusText.Text = "Running No Tool Desync..."
+    
+    task.spawn(function()
+        noToolDesync()
+        
+        task.wait(1)
+        NoToolButton.Text = "NO TOOL DESYNC"
+        NoToolButton.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+        StatusText.Text = "No Tool Desync Complete ✓"
+        StatusText.TextColor3 = Color3.fromRGB(0, 200, 0)
+        
+        task.wait(2)
+        StatusText.Text = "Choose Desync Method"
+        StatusText.TextColor3 = Color3.fromRGB(150, 150, 150)
+    end)
+end)
+
+local dragging = false
+local dragStart, startPos
+
+MainFrame.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = true
+        dragStart = input.Position
+        startPos = MainFrame.Position
+    end
+end)
+
+MainFrame.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = false
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+        local delta = input.Position - dragStart
+        MainFrame.Position = UDim2.new(
+            startPos.X.Scale, 
+            startPos.X.Offset + delta.X,
+            startPos.Y.Scale, 
+            startPos.Y.Offset + delta.Y
+        )
+    end
+end)
+
+print("hi skid")

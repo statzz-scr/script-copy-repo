@@ -1,0 +1,208 @@
+-- Ryxx Speed Boost (Small Light Blue Neon GUI | Draggable)
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
+
+local LocalPlayer = Players.LocalPlayer
+local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
+
+-- Remove accessories
+local function RemoveAccessories(character)
+    if not character then return end
+    for _, v in ipairs(character:GetChildren()) do
+        if v:IsA("Accessory") then
+            v:Destroy()
+        end
+    end
+end
+
+if LocalPlayer.Character then
+    RemoveAccessories(LocalPlayer.Character)
+end
+LocalPlayer.CharacterAdded:Connect(RemoveAccessories)
+
+-- GUI
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "RyxxSpeedBoostUI"
+ScreenGui.ResetOnSpawn = false
+ScreenGui.Parent = PlayerGui
+
+local MainFrame = Instance.new("Frame")
+MainFrame.Size = UDim2.new(0, 190, 0, 120)
+MainFrame.Position = UDim2.new(0.5, -95, 0.4, 0)
+MainFrame.BackgroundColor3 = Color3.fromRGB(15, 30, 40)
+MainFrame.BorderSizePixel = 0
+MainFrame.Active = true
+MainFrame.Parent = ScreenGui
+
+Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 12)
+
+local Stroke = Instance.new("UIStroke", MainFrame)
+Stroke.Color = Color3.fromRGB(0, 200, 255)
+Stroke.Thickness = 2
+Stroke.Transparency = 0.1
+
+-- Title
+local Title = Instance.new("TextLabel")
+Title.Size = UDim2.new(1, -60, 0, 22)
+Title.Position = UDim2.new(0, 10, 0, 6)
+Title.BackgroundTransparency = 1
+Title.Text = "Ryxx Speed Boost"
+Title.TextColor3 = Color3.fromRGB(180, 240, 255)
+Title.Font = Enum.Font.GothamBold
+Title.TextSize = 14
+Title.TextXAlignment = Enum.TextXAlignment.Left
+Title.Parent = MainFrame
+
+-- Speed
+local SpeedLabel = Instance.new("TextLabel")
+SpeedLabel.Size = UDim2.new(0, 70, 0, 20)
+SpeedLabel.Position = UDim2.new(0, 10, 0, 36)
+SpeedLabel.BackgroundTransparency = 1
+SpeedLabel.Text = "Speed"
+SpeedLabel.TextColor3 = Color3.fromRGB(200, 240, 255)
+SpeedLabel.Font = Enum.Font.Gotham
+SpeedLabel.TextSize = 13
+SpeedLabel.Parent = MainFrame
+
+local SpeedBox = Instance.new("TextBox")
+SpeedBox.Size = UDim2.new(0, 80, 0, 22)
+SpeedBox.Position = UDim2.new(0, 95, 0, 36)
+SpeedBox.BackgroundColor3 = Color3.fromRGB(20, 45, 60)
+SpeedBox.Text = "22.5"
+SpeedBox.TextColor3 = Color3.fromRGB(230, 255, 255)
+SpeedBox.Font = Enum.Font.Gotham
+SpeedBox.TextSize = 13
+SpeedBox.ClearTextOnFocus = false
+SpeedBox.Parent = MainFrame
+Instance.new("UICorner", SpeedBox)
+
+-- Jump
+local JumpLabel = Instance.new("TextLabel")
+JumpLabel.Size = UDim2.new(0, 70, 0, 20)
+JumpLabel.Position = UDim2.new(0, 10, 0, 62)
+JumpLabel.BackgroundTransparency = 1
+JumpLabel.Text = "Jump"
+JumpLabel.TextColor3 = Color3.fromRGB(200, 240, 255)
+JumpLabel.Font = Enum.Font.Gotham
+JumpLabel.TextSize = 13
+JumpLabel.Parent = MainFrame
+
+local JumpBox = Instance.new("TextBox")
+JumpBox.Size = UDim2.new(0, 80, 0, 22)
+JumpBox.Position = UDim2.new(0, 95, 0, 62)
+JumpBox.BackgroundColor3 = Color3.fromRGB(20, 45, 60)
+JumpBox.Text = "35"
+JumpBox.TextColor3 = Color3.fromRGB(230, 255, 255)
+JumpBox.Font = Enum.Font.Gotham
+JumpBox.TextSize = 13
+JumpBox.ClearTextOnFocus = false
+JumpBox.Parent = MainFrame
+Instance.new("UICorner", JumpBox)
+
+-- Toggle
+local Toggle = Instance.new("TextButton")
+Toggle.Size = UDim2.new(0, 44, 0, 18)
+Toggle.Position = UDim2.new(1, -54, 0, 8)
+Toggle.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+Toggle.Text = ""
+Toggle.AutoButtonColor = false
+Toggle.Parent = MainFrame
+Instance.new("UICorner", Toggle).CornerRadius = UDim.new(1, 0)
+
+local Knob = Instance.new("Frame")
+Knob.Size = UDim2.new(0, 16, 0, 16)
+Knob.Position = UDim2.new(0, 2, 0.5, 0)
+Knob.AnchorPoint = Vector2.new(0, 0.5)
+Knob.BackgroundColor3 = Color3.fromRGB(220, 255, 255)
+Knob.Parent = Toggle
+Instance.new("UICorner", Knob).CornerRadius = UDim.new(1, 0)
+
+-- Discord
+local Discord = Instance.new("TextLabel")
+Discord.Size = UDim2.new(1, 0, 0, 16)
+Discord.Position = UDim2.new(0, 0, 1, -18)
+Discord.BackgroundTransparency = 1
+Discord.Text = "discord.gg/wguDVKBWE"
+Discord.TextColor3 = Color3.fromRGB(140, 220, 255)
+Discord.Font = Enum.Font.Gotham
+Discord.TextSize = 11
+Discord.Parent = MainFrame
+
+-- Logic
+local Enabled = false
+local SpeedValue = 22.5
+local JumpValue = 35
+
+Toggle.MouseButton1Click:Connect(function()
+    Enabled = not Enabled
+    TweenService:Create(Toggle, TweenInfo.new(0.2), {
+        BackgroundColor3 = Enabled and Color3.fromRGB(0, 180, 255) or Color3.fromRGB(80, 80, 80)
+    }):Play()
+    TweenService:Create(Knob, TweenInfo.new(0.2), {
+        Position = Enabled and UDim2.new(1, -18, 0.5, 0) or UDim2.new(0, 2, 0.5, 0)
+    }):Play()
+end)
+
+SpeedBox.FocusLost:Connect(function()
+    local v = tonumber(SpeedBox.Text)
+    if v then SpeedValue = v end
+end)
+
+JumpBox.FocusLost:Connect(function()
+    local v = tonumber(JumpBox.Text)
+    if v then JumpValue = v end
+end)
+
+RunService.Heartbeat:Connect(function()
+    if not Enabled then return end
+    local char = LocalPlayer.Character
+    local hum = char and char:FindFirstChildOfClass("Humanoid")
+    local root = char and char:FindFirstChild("HumanoidRootPart")
+    if hum and root then
+        if hum.MoveDirection.Magnitude > 0 then
+            root.Velocity = Vector3.new(
+                hum.MoveDirection.X * SpeedValue,
+                root.Velocity.Y,
+                hum.MoveDirection.Z * SpeedValue
+            )
+        end
+        hum.UseJumpPower = true
+        hum.JumpPower = JumpValue
+    end
+end)
+
+-- ✅ DRAG SYSTEM (Mouse + Mobile)
+local dragging = false
+local dragStart
+local startPos
+
+MainFrame.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1
+    or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = true
+        dragStart = input.Position
+        startPos = MainFrame.Position
+
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                dragging = false
+            end
+        end)
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement
+    or input.UserInputType == Enum.UserInputType.Touch) then
+        local delta = input.Position - dragStart
+        MainFrame.Position = UDim2.new(
+            startPos.X.Scale,
+            startPos.X.Offset + delta.X,
+            startPos.Y.Scale,
+            startPos.Y.Offset + delta.Y
+        )
+    end
+end)

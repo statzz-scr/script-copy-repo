@@ -1,0 +1,102 @@
+-- deobsfucated by the goat btw
+
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
+
+local LocalPlayer = Players.LocalPlayer
+local Backpack = LocalPlayer:WaitForChild("Backpack")
+local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
+
+-- Grab the remote properly for Steal a Brainrot
+local Packages = ReplicatedStorage:WaitForChild("Packages")
+local Net = Packages:WaitForChild("Net")
+local UseItemRemote = Net:WaitForChild("RE/UseItem", 10)  -- Timeout if game changed
+
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "fezwasherehehe"
+ScreenGui.ResetOnSpawn = false
+ScreenGui.Parent = PlayerGui
+
+local Button = Instance.new("TextButton")
+Button.Size = UDim2.new(0, 150, 0, 45)
+Button.Position = UDim2.new(1, -170, 0.05, 0)
+Button.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+Button.BorderSizePixel = 0
+Button.Text = "Invisible Clone"
+Button.TextColor3 = Color3.fromRGB(255, 255, 255)
+Button.TextScaled = true
+Button.Font = Enum.Font.GothamSemibold
+Button.Parent = ScreenGui
+
+local Corner = Instance.new("UICorner")
+Corner.CornerRadius = UDim.new(0, 12)
+Corner.Parent = Button
+
+Button.MouseEnter:Connect(function()
+    Button.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+end)
+
+Button.MouseLeave:Connect(function()
+    Button.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+end)
+
+Button.MouseButton1Click:Connect(function()
+    if not UseItemRemote then
+        Button.Text = "Remote Missing!"
+        task.wait(2)
+        Button.Text = "Invisible Clone"
+        return
+    end
+    Button.Text = "Activating..."
+    Button.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
+    task.spawn(function()
+        local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+        local Humanoid = Character:WaitForChild("Humanoid")
+        
+        local Cloak = Backpack:FindFirstChild("Invisibility Cloak")
+        local Cloner = Backpack:FindFirstChild("Quantum Cloner")
+        
+        if not Cloak or not Cloner then
+            Button.Text = "Buy Cloak/Cloner!"
+            task.wait(2)
+            Button.Text = "Invisible Clone"
+            Button.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+            return
+        end
+        
+        -- Exact original sequence with timings
+        Humanoid:EquipTool(Cloak)
+        RunService.Heartbeat:Wait()
+        UseItemRemote:FireServer()
+        task.wait(1.2)
+
+        Humanoid:EquipTool(Cloner)
+        RunService.Heartbeat:Wait()
+        UseItemRemote:FireServer()
+        task.wait(0.01)
+
+        Humanoid:EquipTool(Cloak)
+        task.wait(0.01)
+        UseItemRemote:FireServer()
+
+        Humanoid:EquipTool(Cloak)
+        RunService.Heartbeat:Wait()
+        UseItemRemote:FireServer()
+        task.wait(1.2)
+
+        Humanoid:EquipTool(Cloner)
+        RunService.Heartbeat:Wait()
+        UseItemRemote:FireServer()
+        task.wait(0.01)
+
+        Humanoid:EquipTool(Cloak)
+        task.wait(0.01)
+        UseItemRemote:FireServer()
+        
+        Button.Text = "Clone Ready!"
+        task.wait(2)
+        Button.Text = "Invisible Clone"
+        Button.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    end)
+end)

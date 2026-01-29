@@ -1,0 +1,280 @@
+-- ============================================================
+-- Anti-Devourer/Lag
+-- ============================================================
+
+
+local ANTI_LAG = {}
+local antiLagRunning = false
+local antiLagConnections = {}
+local cleanedCharacters = {} -- Track already cleaned characters
+
+-- Comprehensive cleanup function for characters
+local function destroyAllEquippableItems(character)
+    if not character then return end
+    if not CONFIG.ANTI_LAG_ENABLED then return end
+    
+    pcall(function()
+        -- Remove all accessories (hats, hair, face accessories, etc.)
+        for _, child in ipairs(character:GetChildren()) do
+            if child:IsA("Accessory") or child:IsA("Hat") then
+                child:Destroy()
+            end
+        end
+        
+        -- Remove clothing
+        for _, child in ipairs(character:GetChildren()) do
+            if child:IsA("Shirt") or child:IsA("Pants") or child:IsA("ShirtGraphic") then
+                child:Destroy()
+            end
+        end
+        
+        -- Remove body colors
+        local bodyColors = character:FindFirstChildOfClass("BodyColors")
+        if bodyColors then
+            bodyColors:Destroy()
+        end
+        
+        -- Remove character meshes
+        for _, child in ipairs(character:GetChildren()) do
+            if child:IsA("CharacterMesh") then
+                child:Destroy()
+            end
+        end
+        
+        -- Remove layered clothing (modern avatar items)
+        for _, child in ipairs(character:GetDescendants()) do
+            if child.ClassName == "LayeredClothing" or child.ClassName == "WrapLayer" then
+                child:Destroy()
+            end
+        end
+        
+        -- Remove special meshes from body parts
+        for _, child in ipairs(character:GetChildren()) do
+            if child:IsA("BasePart") then
+                local mesh = child:FindFirstChildOfClass("SpecialMesh")
+                if mesh then
+                    mesh:Destroy()
+                end
+            end
+        end
+        
+        -- Remove all particle effects
+        for _, child in ipairs(character:GetDescendants()) do
+            if child:IsA("ParticleEmitter") or child:IsA("Trail") or child:IsA("Beam") then
+                child:Destroy()
+            end
+        end
+        
+        -- Remove all light sources
+        for _, child in ipairs(character:GetDescendants()) do
+            if child:IsA("PointLight") or child:IsA("SpotLight") or child:IsA("SurfaceLight") then
+                child:Destroy()
+            end
+        end
+        
+        -- Remove fire, smoke, sparkles
+        for _, child in ipairs(character:GetDescendants()) do
+            if child:IsA("Fire") or child:IsA("Smoke") or child:IsA("Sparkles") then
+                child:Destroy()
+            end
+        end
+        
+        -- Remove highlights
+        for _, child in ipairs(character:GetDescendants()) do
+            if child:IsA("Highlight") then
+                child:Destroy()
+            end
+        end
+        
+        -- Remove decals and textures from body parts
+        for _, child in ipairs(character:GetDescendants()) do
+            if child:IsA("Decal") or child:IsA("Texture") then
+                -- Keep face decal on head
+                if not (child.Name == "face" and child.Parent and child.Parent.Name == "Head") then
+                    child:Destroy()
+                end
+            end
+        end
+    end)
+end
+
+-- Clean backpack tools
+local function destroyBackpackTools(player)
+    if not CONFIG.ANTI_LAG_ENABLED then return end
+    
+    pcall(function()
+        local backpack = player:FindFirstChild("Backpack")
+        if backpack then
+            for _, tool in ipairs(backpack:GetChildren()) do
+                if tool:IsA("Tool") then
+                    for _, desc in ipairs(tool:GetDescendants()) do
+                        if desc:IsA("ParticleEmitter") or desc:IsA("Trail") or desc:IsA("Beam") or
+                           desc:IsA("SpecialMesh") or desc:IsA("PointLight") or desc:IsA("SpotLight") or
+                           desc:IsA("Fire") or desc:IsA("Smoke") or desc:IsA("Sparkles") then
+                            desc:Destroy()
+                        end
+                    end
+                end
+            end
+        end
+    end)
+end
+
+-- Clean equipped tools
+local function destroyEquippedTools(character)
+    if not character then return end
+    if not CONFIG.ANTI_LAG_ENABLED then return end
+    
+    pcall(function()
+        for _, tool in ipairs(character:GetChildren()) do
+            if tool:IsA("Tool") then
+                for _, desc in ipairs(tool:GetDescendants()) do
+                    if desc:IsA("ParticleEmitter") or desc:IsA("Trail") or desc:IsA("Beam") or
+                       desc:IsA("SpecialMesh") or desc:IsA("PointLight") or desc:IsA("SpotLight") or
+                       desc:IsA("Fire") or desc:IsA("Smoke") or desc:IsA("Sparkles") then
+                        desc:Destroy()
+                    end
+                end
+            end
+        end
+    end)
+end
+
+-- Comprehensive character cleanup
+local function antiLagCleanCharacter(char)
+    if not char then return end
+    
+    destroyAllEquippableItems(char)
+    destroyEquippedTools(char)
+    cleanedCharacters[char] = true
+end
+
+-- Disconnect all connections
+local function antiLagDisconnectAll()
+    for _, conn in ipairs(antiLagConnections) do
+        if typeof(conn) == "RBXScriptConnection" then
+            conn:Disconnect()
+        end
+    end
+    antiLagConnections = {}
+    cleanedCharacters = {}
+end
+
+-- Disconnect all connections
+local function antiLagDisconnectAll()
+    for _, conn in ipairs(antiLagConnections) do
+        if typeof(conn) == "RBXScriptConnection" then
+            conn:Disconnect()
+        end
+    end
+    antiLagConnections = {}
+    cleanedCharacters = {}
+end
+
+function ANTI_LAG.Enable()
+    if antiLagRunning then return end
+    antiLagRunning = true
+    
+    -- Clean all existing players ONCE
+    for _, plr in ipairs(S.Players:GetPlayers()) do
+        if plr.Character then
+            antiLagCleanCharacter(plr.Character)
+            destroyBackpackTools(plr)
+        end
+        
+        -- Monitor backpack changes
+        if plr.Backpack then
+            table.insert(antiLagConnections, plr.Backpack.ChildAdded:Connect(function()
+                if antiLagRunning and CONFIG.ANTI_LAG_ENABLED then
+                    task.wait(0.1)
+                    destroyBackpackTools(plr)
+                end
+            end))
+        end
+    end
+    
+    -- Monitor new players
+    table.insert(antiLagConnections, S.Players.PlayerAdded:Connect(function(plr)
+        table.insert(antiLagConnections, plr.CharacterAdded:Connect(function(char)
+            if not antiLagRunning then return end
+            task.wait(0.5) -- Wait for character to fully load
+            antiLagCleanCharacter(char)
+            destroyBackpackTools(plr)
+            
+            -- Monitor NEW items being added to character (event-based, not loop)
+            table.insert(antiLagConnections, char.ChildAdded:Connect(function(child)
+                if not antiLagRunning or not CONFIG.ANTI_LAG_ENABLED then return end
+                task.wait(0.1)
+                
+                if child:IsA("Accessory") or child:IsA("Hat") or child:IsA("Shirt") or 
+                   child:IsA("Pants") or child:IsA("ShirtGraphic") then
+                    child:Destroy()
+                elseif child:IsA("Tool") then
+                    destroyEquippedTools(char)
+                end
+            end))
+        end))
+        
+        if plr.Character then
+            antiLagCleanCharacter(plr.Character)
+            destroyBackpackTools(plr)
+        end
+        
+        -- Monitor backpack
+        if plr.Backpack then
+            table.insert(antiLagConnections, plr.Backpack.ChildAdded:Connect(function()
+                if antiLagRunning and CONFIG.ANTI_LAG_ENABLED then
+                    task.wait(0.1)
+                    destroyBackpackTools(plr)
+                end
+            end))
+        end
+    end))
+    
+    -- Monitor existing player characters
+    for _, plr in ipairs(S.Players:GetPlayers()) do
+        table.insert(antiLagConnections, plr.CharacterAdded:Connect(function(char)
+            if antiLagRunning and CONFIG.ANTI_LAG_ENABLED then
+                task.wait(0.5)
+                antiLagCleanCharacter(char)
+                destroyBackpackTools(plr)
+                
+                -- Monitor NEW items being added (event-based)
+                table.insert(antiLagConnections, char.ChildAdded:Connect(function(child)
+                    if not antiLagRunning or not CONFIG.ANTI_LAG_ENABLED then return end
+                    task.wait(0.1)
+                    
+                    if child:IsA("Accessory") or child:IsA("Hat") or child:IsA("Shirt") or 
+                       child:IsA("Pants") or child:IsA("ShirtGraphic") then
+                        child:Destroy()
+                    elseif child:IsA("Tool") then
+                        destroyEquippedTools(char)
+                    end
+                end))
+            end
+        end))
+    end
+    
+    -- MUCH LESS AGGRESSIVE PERIODIC CLEANUP (every 3 seconds instead of every frame)
+    table.insert(antiLagConnections, task.spawn(function()
+        while antiLagRunning and CONFIG.ANTI_LAG_ENABLED do
+            task.wait(3) -- Only check every 3 seconds
+            
+            for _, plr in ipairs(S.Players:GetPlayers()) do
+                if plr.Character and not cleanedCharacters[plr.Character] then
+                    antiLagCleanCharacter(plr.Character)
+                    destroyBackpackTools(plr)
+                end
+            end
+        end
+    end))
+    
+    showNotification("Optimized Anti-Lag Enabled", COLORS.Success)
+end
+
+function ANTI_LAG.Disable()
+    if not antiLagRunning then return end
+    antiLagRunning = false
+    antiLagDisconnectAll()
+    showNotification("Anti-Lag Disabled", COLORS.Red)
+end

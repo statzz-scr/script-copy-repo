@@ -1,0 +1,181 @@
+-- Full working script - Ryxx Fps Devour
+task.wait(1)
+
+local Players = game:GetService("Players")
+local Lighting = game:GetService("Lighting")
+local LocalPlayer = Players.LocalPlayer
+local Backpack = LocalPlayer:WaitForChild("Backpack")
+
+-- Remove old UI
+local old = game.CoreGui:FindFirstChild("RyxxFPSDevourUI")
+if old then
+    old:Destroy()
+end
+
+--  FPS BOOST
+Lighting.GlobalShadows = false
+Lighting.EnvironmentDiffuseScale = 0
+Lighting.EnvironmentSpecularScale = 0
+
+for _, v in ipairs(Lighting:GetChildren()) do
+    if v:IsA("PostEffect") then
+        v.Enabled = false
+    end
+end
+
+for _, v in ipairs(workspace:GetDescendants()) do
+    if v:IsA("ParticleEmitter") then
+        v.Enabled = false
+    end
+end
+
+--  CHARACTER CLEAN 
+local function cleanCharacter(char)
+    if char == LocalPlayer.Character then return end
+    for _, a in ipairs(char:GetChildren()) do
+        if a:IsA("Accessory") then
+            a:Destroy()
+        end
+    end
+    char.ChildAdded:Connect(function(c)
+        if c:IsA("Accessory") then
+            c:Destroy()
+        end
+    end)
+end
+
+for _, h in ipairs(workspace:GetDescendants()) do
+    if h:IsA("Humanoid") then
+        cleanCharacter(h.Parent)
+    end
+end
+
+workspace.DescendantAdded:Connect(function(d)
+    if d:IsA("Humanoid") then
+        task.wait(0.1)
+        cleanCharacter(d.Parent)
+    end
+end)
+
+-- = GUI 
+local gui = Instance.new("ScreenGui")
+gui.Name = "RyxxFPSDevourUI"
+gui.Parent = game.CoreGui
+gui.ResetOnSpawn = false
+
+local main = Instance.new("Frame")
+main.Parent = gui
+main.Size = UDim2.new(0, 230, 0, 125)
+main.Position = UDim2.new(0.5, -115, 0.5, -62)
+main.BackgroundColor3 = Color3.fromRGB(0, 170, 255) -- light blue neon
+main.BorderSizePixel = 0
+main.Active = true
+main.Draggable = true
+
+local mainCorner = Instance.new("UICorner", main)
+mainCorner.CornerRadius = UDim.new(0, 22)
+
+local stroke = Instance.new("UIStroke", main)
+stroke.Thickness = 2
+stroke.Color = Color3.fromRGB(180, 235, 255)
+stroke.Transparency = 0.15
+
+-- Main title
+local title = Instance.new("TextLabel")
+title.Parent = main
+title.Size = UDim2.new(1, -16, 0, 24)
+title.Position = UDim2.new(0, 8, 0, 6)
+title.BackgroundTransparency = 1
+title.Text = "Ryxx Fps Devour"
+title.Font = Enum.Font.GothamBold
+title.TextSize = 18
+title.TextColor3 = Color3.new(1, 1, 1)
+title.TextXAlignment = Enum.TextXAlignment.Center
+title.TextYAlignment = Enum.TextYAlignment.Center
+
+-- TikTok small text
+local tiktok = Instance.new("TextLabel")
+tiktok.Parent = main
+tiktok.Size = UDim2.new(1, -16, 0, 14)
+tiktok.Position = UDim2.new(0, 8, 0, 30)
+tiktok.BackgroundTransparency = 1
+tiktok.Text = "TikTok: RyxxTheg0at"
+tiktok.Font = Enum.Font.Gotham
+tiktok.TextSize = 12 -- smaller text
+tiktok.TextColor3 = Color3.fromRGB(235, 245, 255)
+tiktok.TextXAlignment = Enum.TextXAlignment.Center
+tiktok.TextYAlignment = Enum.TextYAlignment.Center
+
+-- Button
+local button = Instance.new("TextButton")
+button.Parent = main
+button.Size = UDim2.new(1, -40, 0, 44)
+button.Position = UDim2.new(0, 20, 0, 54)
+button.BackgroundColor3 = Color3.fromRGB(255, 255, 255) -- white button
+button.Text = "Devour"
+button.Font = Enum.Font.GothamBold
+button.TextSize = 18
+button.TextColor3 = Color3.fromRGB(0, 140, 220)
+button.BorderSizePixel = 0
+button.AutoButtonColor = true
+
+local btnCorner = Instance.new("UICorner", button)
+btnCorner.CornerRadius = UDim.new(0, 16)
+
+-- Discord text
+local discord = Instance.new("TextLabel")
+discord.Parent = main
+discord.Size = UDim2.new(1, 0, 0, 20)
+discord.Position = UDim2.new(0, 0, 1, -22)
+discord.BackgroundTransparency = 1
+discord.Text = "discord.gg/wguDVKBWE"
+discord.Font = Enum.Font.Gotham
+discord.TextSize = 14
+discord.TextColor3 = Color3.fromRGB(235, 245, 255)
+discord.TextXAlignment = Enum.TextXAlignment.Center
+
+--  BUTTON LOGIC
+local originalText = "Devour"
+
+button.MouseButton1Click:Connect(function()
+    button.Text = "WORKING"
+    button.AutoButtonColor = false
+
+    local char = LocalPlayer.Character
+    if not char then
+        button.Text = "ERROR"
+        task.wait(1)
+        button.Text = originalText
+        button.AutoButtonColor = true
+        return
+    end
+
+    local humanoid = char:FindFirstChildOfClass("Humanoid")
+    local tool = Backpack:FindFirstChild("Quantum Cloner")
+
+    if not humanoid or not tool then
+        button.Text = "ERROR"
+        task.wait(1)
+        button.Text = originalText
+        button.AutoButtonColor = true
+        return
+    end
+
+    -- Equip and activate tool
+    humanoid:EquipTool(tool)
+    task.wait(0.1)
+
+    for _, t in ipairs(Backpack:GetChildren()) do
+        if t:IsA("Tool") then
+            t.Parent = char
+        end
+    end
+
+    task.wait(0.1)
+    tool:Activate()
+
+    task.delay(0.6, function()
+        button.Text = originalText
+        button.AutoButtonColor = true
+    end)
+end)

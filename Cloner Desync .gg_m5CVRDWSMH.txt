@@ -1,0 +1,100 @@
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local player = Players.LocalPlayer
+
+local function DesyncV1()
+    -- Encontrar a ferramenta Quantum Cloner
+    local backpack = player:WaitForChild("Backpack")
+    local tool = backpack:FindFirstChild("Quantum Cloner")
+    if not tool then
+        warn("Quantum Cloner não encontrado no Backpack")
+        return
+    end
+
+    -- Equipar a ferramenta
+    local character = player.Character
+    local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+    if humanoid then
+        humanoid:EquipTool(tool)
+    end
+
+    -- Configurar flags de rede
+    local flags = {
+        {"GameNetPVHeaderRotationalVelocityZeroCutoffExponent", "-5000"},
+        {"GameNetPVHeaderLinearVelocityZeroCutoffExponent", "-5000"},
+        {"GameNetDontSendRedundantNumTimes", "1"},
+        {"GameNetDontSendRedundantDeltaPositionMillionth", "1"},
+        {"LargeReplicatorWrite5", "true"},
+        {"LargeReplicatorEnabled9", "true"},
+        {"LargeReplicatorRead5", "true"},
+        {"LargeReplicatorSerializeRead3", "true"},
+        {"LargeReplicatorSerializeWrite4", "true"},
+        {"NextGenReplicatorEnabledWrite4", "true"},
+        {"ReplicationFocusNouExtentsSizeCutoffForPauseStuds", "2147483647"},
+        {"StreamJobNOUVolumeLengthCap", "2147483647"},
+        {"StreamJobNOUVolumeCap", "2147483647"},
+        {"AngularVelociryLimit", "360"},
+        {"S2PhysicsSenderRate", "15000"},
+        {"PhysicsSenderMaxBandwidthBps", "20000"},
+        {"TimestepArbiterVelocityCriteriaThresholdTwoDt", "2147483646"},
+        {"TimestepArbiterOmegaThou", "1073741823"},
+        {"MaxTimestepMultiplierBuoyancy", "2147483647"},
+        {"MaxTimestepMultiplierAcceleration", "2147483647"},
+        {"MaxTimestepMultiplierContstraint", "2147483647"},
+        {"SimExplicitlyCappedTimestepMultiplier", "2147483646"},
+        {"WorldStepMax", "30"},
+        {"CheckPVDifferencesForInterpolationMinVelThresholdStudsPerSecHundredth", "1"},
+        {"CheckPVDifferencesForInterpolationMinRotVelThresholdRadsPerSecHundredth", "1"},
+        {"CheckPVLinearVelocityIntegrateVsDeltaPositionThresholdPercent", "1"},
+        {"CheckPVCachedRotVelThresholdPercent", "10"},
+        {"CheckPVCachedVelThresholdPercent", "10"},
+        {"InterpolationFrameVelocityThresholdMillionth", "5"},
+        {"InterpolationFrameRotVelocityThresholdMillionth", "5"},
+        {"InterpolationFramePositionThresholdMillionth", "5"},
+        {"TimestepVelThreshold", "1"},
+        {"TimestepArbiterHumanoidTurningVelThreshold", "1"},
+        {"DisableDPIScale", "true"},
+        {"MaxDataPacketPerSend", "2147483647"},
+        {"ServerMaxBandwith", "52"},
+        {"SimOwnedNOUCountThresholdMillionth", "2147483647"},
+        {"MaxMissedWorldStepsRemembered", "-2147483648"},
+        {"DebugSendDistInSteps", "-2147483648"},
+        {"MaxAcceptableUpdateDelay", "1"},
+    }
+
+    -- Aplicar todas as flags
+    for _, data in ipairs(flags) do
+        pcall(function()
+            setfflag(data[1], data[2])
+        end)
+    end
+
+    -- Usar a ferramenta
+    task.wait(0.5)
+    local net = ReplicatedStorage:FindFirstChild("Packages") and ReplicatedStorage.Packages:FindFirstChild("Net")
+    local useItem = net and net:FindFirstChild("RE/UseItem")
+    if useItem then
+        useItem:FireServer()
+    end
+
+    -- Ativar teleporte do Quantum Cloner
+    task.wait(0.5)
+    local onTeleport = net and net:FindFirstChild("RE/QuantumCloner/OnTeleport")
+    if onTeleport then
+        for i = 1, 5 do
+            onTeleport:FireServer()
+        end
+    end
+
+    -- Teleportar personagem aleatoriamente
+    local hrp = character and character:FindFirstChild("HumanoidRootPart")
+    if hrp then
+        local offset = Vector3.new(math.random(-50, 50), 0, math.random(-50, 50))
+        hrp.CFrame = hrp.CFrame + offset
+    end
+    
+    print("Desync V1 executado com sucesso!")
+end
+
+-- Para usar a função:
+-- DesyncV1()

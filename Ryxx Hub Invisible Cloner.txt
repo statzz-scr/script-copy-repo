@@ -1,0 +1,113 @@
+local _LocalPlayer3 = game.Players.LocalPlayer
+
+-- ScreenGui
+local _call7 = Instance.new("ScreenGui")
+_call7.Name = "Ryxx Hub invis clone"
+_call7.ResetOnSpawn = false
+_call7.Parent = _LocalPlayer3:WaitForChild("PlayerGui")
+
+-- Main Frame
+local _call9 = Instance.new("Frame")
+_call9.Size = UDim2.new(0, 260, 0, 175)
+_call9.Position = UDim2.new(0, 40, 0, 60)
+_call9.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+_call9.BackgroundTransparency = 0
+_call9.Active = true
+_call9.Draggable = true
+_call9.Parent = _call7
+
+local _call17 = Instance.new("UICorner")
+_call17.CornerRadius = UDim.new(0, 14)
+_call17.Parent = _call9
+
+-- Icon
+local _call21 = Instance.new("ImageLabel")
+_call21.Size = UDim2.new(0, 38, 0, 38)
+_call21.Position = UDim2.new(0, 12, 0, 8)
+_call21.BackgroundTransparency = 1
+_call21.Image = "http://www.roblox.com/asset/?id=18347450507"
+_call21.ScaleType = Enum.ScaleType.Fit
+_call21.Parent = _call9
+
+-- Title
+local _call29 = Instance.new("TextLabel")
+_call29.Size = UDim2.new(1, -20, 0, 32)
+_call29.Position = UDim2.new(0, 10, 0, 8)
+_call29.BackgroundTransparency = 1
+_call29.Text = "Ryxx Hub invis clone"
+_call29.TextColor3 = Color3.fromRGB(255, 255, 255)
+_call29.Font = Enum.Font.GothamBold
+_call29.TextSize = 19
+_call29.TextXAlignment = Enum.TextXAlignment.Center
+_call29.Parent = _call9
+
+-- Invis Cloner Button (WHITE)
+local _call41 = Instance.new("TextButton")
+_call41.Size = UDim2.new(1, -30, 0, 70)
+_call41.Position = UDim2.new(0, 15, 0.5, -45)
+_call41.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+_call41.BackgroundTransparency = 0
+_call41.Text = "invis cloner"
+_call41.TextColor3 = Color3.fromRGB(0, 0, 0)
+_call41.Font = Enum.Font.GothamBold
+_call41.TextSize = 22
+_call41.TextWrapped = true
+_call41.AutoButtonColor = false
+_call41.Parent = _call9
+
+local _call53 = Instance.new("UICorner")
+_call53.CornerRadius = UDim.new(0, 12)
+_call53.Parent = _call41
+
+-- Button Gradient
+local _call57 = Instance.new("UIGradient")
+_call57.Color = ColorSequence.new({
+	ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
+	ColorSequenceKeypoint.new(1, Color3.fromRGB(220, 220, 220)),
+})
+_call57.Rotation = 90
+_call57.Parent = _call41
+
+-- Discord Text
+local _call69 = Instance.new("TextLabel")
+_call69.Size = UDim2.new(1, -30, 0, 20)
+_call69.Position = UDim2.new(0, 15, 0, 130)
+_call69.BackgroundTransparency = 1
+_call69.Text = "discord.gg/gmfkdycqw"
+_call69.TextColor3 = Color3.fromRGB(255, 255, 255)
+_call69.Font = Enum.Font.Gotham
+_call69.TextSize = 13
+_call69.TextXAlignment = Enum.TextXAlignment.Center
+_call69.Parent = _call9
+
+-- Button Logic
+_call41.MouseButton1Click:Connect(function()
+	local _call86 = _LocalPlayer3.Character and _LocalPlayer3.Character:FindFirstChild("Humanoid")
+	if not _call86 then return end
+
+	local _call88 = _LocalPlayer3:WaitForChild("Backpack")
+
+	for _, tool in ipairs(_call88:GetChildren()) do
+		if tool:IsA("Tool") then
+			_call86:UnequipTools()
+			task.wait(0.05)
+			_call86:EquipTool(tool)
+			task.wait(0.05)
+			tool:Activate()
+
+			_call41.Text = "done unc"
+			task.wait(1)
+
+			local _call105 = _call88:FindFirstChild("Quantum Cloner")
+			if _call105 then
+				_call86:EquipTool(_call105)
+				_call105:Activate()
+			end
+
+			task.wait(0.3)
+			_call41.Text = "invis cloner"
+		end
+	end
+end)
+
+print("Ryxx Hub loaded")

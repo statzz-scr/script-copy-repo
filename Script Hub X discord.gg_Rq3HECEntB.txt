@@ -1,0 +1,119 @@
+-- Why Buy Lights? Just Buy Cxyro Hubs It's cheaper And Better https://discord.gg/Rq3HECEntB
+
+local Players       = game:GetService("Players")
+local TweenService  = game:GetService("TweenService")
+local LocalPlayer   = Players.LocalPlayer
+
+-- Prevent double execution
+if _G.ScriptHubXLoaded then return end
+_G.ScriptHubXLoaded = true
+
+-- Create ScreenGui (placed in PlayerGui – survives respawn)
+local gui = Instance.new("ScreenGui")
+gui.Name           = "ScriptHubXUI"
+gui.ResetOnSpawn   = false
+gui.Parent         = LocalPlayer:WaitForChild("PlayerGui")
+
+-- Main red-themed frame (centered, draggable)
+local frame = Instance.new("Frame")
+frame.Size               = UDim2.fromOffset(320, 230)
+frame.Position           = UDim2.fromScale(0.5, 0.5)
+frame.AnchorPoint        = Vector2.new(0.5, 0.5)
+frame.BackgroundColor3   = Color3.fromRGB(150, 0, 0)
+frame.BackgroundTransparency = 0.18
+frame.Active             = true
+frame.Draggable          = true
+frame.Parent             = gui
+
+local corner = Instance.new("UICorner")
+corner.CornerRadius = UDim.new(0, 16)
+corner.Parent = frame
+
+local stroke = Instance.new("UIStroke")
+stroke.Thickness    = 2
+stroke.Color        = Color3.fromRGB(255, 80, 80)
+stroke.Transparency = 0.3
+stroke.Parent       = frame
+
+-- Title label
+local title = Instance.new("TextLabel")
+title.Size                  = UDim2.new(1, 0, 0, 42)
+title.BackgroundTransparency = 1
+title.Text                  = "🔥 SCRIPT HUB X"
+title.Font                  = Enum.Font.GothamBlack
+title.TextSize              = 22
+title.TextColor3            = Color3.fromRGB(255, 255, 255)
+title.TextXAlignment        = Enum.TextXAlignment.Center
+title.Parent                = frame
+
+-- Discord invite label (click to copy link)
+local discord = Instance.new("TextLabel")
+discord.Size                  = UDim2.new(1, -20, 0, 18)
+discord.Position              = UDim2.fromOffset(10, 42)
+discord.BackgroundTransparency = 1
+discord.Text                  = "discord.gg/JUFS3DDP"
+discord.Font                  = Enum.Font.GothamBold
+discord.TextSize              = 13
+discord.TextColor3            = Color3.fromRGB(255, 255, 255)
+discord.TextXAlignment        = Enum.TextXAlignment.Center
+discord.Active                = true
+discord.Selectable            = true
+discord.Parent                = frame
+
+discord.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        setclipboard("https://discord.gg/JUFS3DDP")
+        -- Optional: visual feedback
+        local originalText = discord.Text
+        discord.Text = "Copied!"
+        task.delay(1.5, function()
+            discord.Text = originalText
+        end)
+    end
+end)
+
+-- Button creation helper with hover animation
+local function createButton(text, yPos, callback)
+    local btn = Instance.new("TextButton")
+    btn.Size               = UDim2.fromOffset(220, 40)
+    btn.Position           = UDim2.fromOffset(50, yPos)
+    btn.Text               = text
+    btn.Font               = Enum.Font.GothamBold
+    btn.TextSize           = 15
+    btn.TextColor3         = Color3.fromRGB(255, 255, 255)
+    btn.BackgroundColor3   = Color3.fromRGB(110, 0, 0)
+    btn.BackgroundTransparency = 0.1
+    btn.AutoButtonColor    = false
+    btn.Parent             = frame
+
+    local btnCorner = Instance.new("UICorner")
+    btnCorner.CornerRadius = UDim.new(0, 10)
+    btnCorner.Parent = btn
+
+    -- Hover effect
+    btn.MouseEnter:Connect(function()
+        TweenService:Create(btn, TweenInfo.new(0.15), {
+            BackgroundColor3 = Color3.fromRGB(180, 0, 0)
+        }):Play()
+    end)
+
+    btn.MouseLeave:Connect(function()
+        TweenService:Create(btn, TweenInfo.new(0.15), {
+            BackgroundColor3 = Color3.fromRGB(110, 0, 0)
+        }):Play()
+    end)
+
+    btn.MouseButton1Click:Connect(callback)
+end
+
+-- ────────────────────────────────────────────────
+--              BUTTONS SECTION
+-- ────────────────────────────────────────────────
+
+createButton("DESYNC", 80, function()
+    loadstring(game:HttpGet("https://pastebin.com/raw/CnjpBEax"))()
+end)
+
+createButton("INSTANT STEAL", 130, function()
+    loadstring(game:HttpGet("https://pastebin.com/raw/ThyPmzS6"))()
+end)

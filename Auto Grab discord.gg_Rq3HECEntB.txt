@@ -1,0 +1,132 @@
+-- Why Buy Lights? Just Buy Cxyro Hubs It's cheaper And Better https://discord.gg/Rq3HECEntB
+
+_G.InstaPickup = true
+
+task.spawn(function()
+    local Players      = game:GetService("Players")
+    local RunService   = game:GetService("RunService")
+    local LocalPlayer  = Players.LocalPlayer
+
+    -- Helper to get current character (waits if not loaded)
+    local function getCharacter()
+        return LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+    end
+
+    -- Helper to get HRP reliably
+    local function getHRP()
+        local char = getCharacter()
+        return char:WaitForChild("HumanoidRootPart", 5)
+    end
+
+    local HRP      = getHRP()
+    local Humanoid = getCharacter():WaitForChild("Humanoid")
+
+    -- Update references on respawn
+    LocalPlayer.CharacterAdded:Connect(function(newChar)
+        HRP      = newChar:WaitForChild("HumanoidRootPart", 5)
+        Humanoid = newChar:WaitForChild("Humanoid")
+    end)
+
+    -- Try to get world position of any ProximityPrompt parent
+    local function getPromptPosition(prompt)
+        local parent = prompt.Parent
+
+        if parent:IsA("BasePart") then
+            return parent.Position
+        end
+
+        if parent:IsA("Model") then
+            local primary = parent.PrimaryPart or parent:FindFirstChildWhichIsA("BasePart")
+            if primary then
+                return primary.Position
+            end
+        end
+
+        if parent:IsA("Attachment") then
+            return parent.WorldPosition
+        end
+
+        -- Fallback: try to find any BasePart in parent
+        local part = parent:FindFirstChildWhichIsA("BasePart", true)
+        return part and part.Position or nil
+    end
+
+    -- Find the closest enabled "Steal" prompt in workspace.Plots
+    local function findNearestStealPrompt()
+        local nearest = nil
+        local minDist = math.huge
+
+        local plotsFolder = workspace:FindFirstChild("Plots")
+        if not plotsFolder then
+            return nil, math.huge
+        end
+
+        for _, descendant in pairs(plotsFolder:GetDescendants()) do
+            if descendant:IsA("ProximityPrompt") 
+               and descendant.Enabled 
+               and descendant.ActionText == "Steal" then
+                
+                local pos = getPromptPosition(descendant)
+                if pos then
+                    local distance = (HRP.Position - pos).Magnitude
+                    if distance <= descendant.MaxActivationDistance and distance < minDist then
+                        minDist = distance
+                        nearest  = descendant
+                    end
+                end
+            end
+        end
+
+        return nearest, minDist
+    end
+
+    -- Force-trigger the proximity prompt (most reliable method combo)
+    local function triggerPrompt(prompt)
+        if not prompt or not prompt:IsDescendantOf(workspace) then return end
+
+        -- Method 1: fireproximityprompt (works in most exploits)
+        pcall(function()
+            fireproximityprompt(prompt, 1000, math.huge)
+        end)
+
+        -- Method 2: simulate hold begin/end (fallback)
+        pcall(function()
+            prompt:InputHoldBegin()
+            task.wait(0.03)
+            prompt:InputHoldEnd()
+        end)
+    end
+
+    -- Main loop variables
+    local currentPrompt   = nil
+    local currentDistance = math.huge
+    local lastScan        = 0
+
+    -- Scan for nearest prompt every ~50 ms
+    RunService.Heartbeat:Connect(function()
+        local now = tick()
+        if now - lastScan >= 0.05 then
+            currentPrompt, currentDistance = findNearestStealPrompt()
+            lastScan = now
+        end
+    end)
+
+    -- Main auto-steal loop
+    while true do
+        task.wait(0.08)  -- prevent freezing the thread
+
+        if not _G.InstaPickup then
+            continue
+        end
+
+        -- Only run when walkspeed is boosted (likely in combat/farm mode)
+        if Humanoid.WalkSpeed <= 25 then
+            continue
+        end
+
+        if currentPrompt and currentDistance <= currentPrompt.MaxActivationDistance then
+            triggerPrompt(currentPrompt)
+            task.wait(1.30)  -- delay between steals (adjust based on game cooldown)
+        end
+    end
+end)

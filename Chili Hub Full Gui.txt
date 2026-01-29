@@ -1,0 +1,287 @@
+local genv = getgenv()
+local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+local RunService = game:GetService("RunService")
+local HttpService = game:GetService("HttpService")
+local UserInputService = game:GetService("UserInputService")
+local CoreGui = game:GetService("CoreGui")
+
+local LocalPlayer = Players.LocalPlayer
+local Color3 = Color3
+local UDim2 = UDim2
+local Vector2 = Vector2
+local TweenInfo = TweenInfo
+local Enum = Enum
+local Instance = Instance
+
+local function getGuiParent()
+    if gethui then
+        return gethui()
+    elseif game.CoreGui then
+        return game.CoreGui
+    else
+        return LocalPlayer:WaitForChild("PlayerGui")
+    end
+end
+
+local COLORS = {
+    DarkBlue = Color3.fromRGB(16, 24, 39),
+    DarkerBlue = Color3.fromRGB(12, 18, 32),
+    MediumBlue = Color3.fromRGB(21, 30, 47),
+    LightBlue = Color3.fromRGB(10, 82, 120),
+    Cyan = Color3.fromRGB(56, 189, 248),
+    LightCyan = Color3.fromRGB(56, 189, 248),
+    GrayBlue = Color3.fromRGB(30, 41, 59),
+    DarkGrayBlue = Color3.fromRGB(25, 32, 48),
+    BrightCyan = Color3.fromRGB(52, 180, 230),
+    White = Color3.fromRGB(241, 245, 249),
+    LightGray = Color3.fromRGB(148, 163, 184),
+    Red = Color3.fromRGB(239, 68, 68)
+}
+
+local GothamBold = Enum.Font.GothamBold
+local GothamMedium = Enum.Font.GothamMedium
+local Gotham = Enum.Font.Gotham
+
+local function ensureFolder(path)
+    if not isfolder(path) then
+        makefolder(path)
+    end
+end
+
+local function getFiles(path)
+    if isfolder(path) then
+        return listfiles(path)
+    end
+    return {}
+end
+
+local Options = {}
+local Folder = "ChilliLib"
+
+local function LoadConfig(configName)
+    local path = Folder .. "/settings/" .. configName .. ".json"
+    if isfile(path) then
+        local success, data = pcall(function()
+            return HttpService:JSONDecode(readfile(path))
+        end)
+        if success then
+            return true, data
+        end
+    end
+    return false, "No file"
+end
+
+local function SaveConfig(configName, data)
+    local path = Folder .. "/settings/" .. configName .. ".json"
+    ensureFolder(Folder)
+    ensureFolder(Folder .. "/settings")
+    pcall(function()
+        writefile(path, HttpService:JSONEncode(data))
+    end)
+end
+
+local function RefreshConfigList()
+    local path = Folder .. "/settings"
+    ensureFolder(Folder)
+    ensureFolder(path)
+    local configs = {}
+    for _, file in ipairs(getFiles(path)) do
+        if string.match(file, "%.json$") then
+            table.insert(configs, file)
+        end
+    end
+    return configs
+end
+
+local function SetFolder(folderName)
+    Folder = folderName
+    ensureFolder(folderName)
+    ensureFolder(folderName .. "/settings")
+end
+
+local function GetService(serviceName)
+    return game:GetService(serviceName)
+end
+
+local function CreateWindow(options)
+    local settings = {
+        Title = options.Title or "Chilli Hub - Steal a Brainrot",
+        Size = options.Size or UDim2.fromOffset(445, 305)
+    }
+
+    local MainGUI = Instance.new("ScreenGui")
+    MainGUI.Name = "ChilliLibUI"
+    MainGUI.ScreenInsets = Enum.ScreenInsets.None
+    MainGUI.ResetOnSpawn = false
+    MainGUI.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    MainGUI.DisplayOrder = 10000
+    MainGUI.Parent = getGuiParent()
+
+    local MainFrame = Instance.new("Frame")
+    MainFrame.Name = "MainBase"
+    MainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
+    MainFrame.Position = UDim2.fromScale(0.5, 0.5)
+    MainFrame.Size = UDim2.new(0, 0, 0, 0)
+    MainFrame.Visible = true
+    MainFrame.ClipsDescendants = true
+    MainFrame.BackgroundColor3 = COLORS.DarkBlue
+    MainFrame.BorderSizePixel = 0
+    MainFrame.Parent = MainGUI
+
+    Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 20)
+
+    local UIGradient = Instance.new("UIGradient", MainFrame)
+    UIGradient.Rotation = 35
+    UIGradient.Color = ColorSequence.new({
+        ColorSequenceKeypoint.new(0, COLORS.DarkerBlue),
+        ColorSequenceKeypoint.new(0.55, COLORS.MediumBlue),
+        ColorSequenceKeypoint.new(1, COLORS.LightBlue)
+    })
+
+    local UIStroke1 = Instance.new("UIStroke", MainFrame)
+    UIStroke1.Thickness = 3
+    UIStroke1.Transparency = 0.8
+    UIStroke1.Color = COLORS.Cyan
+    UIStroke1.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+
+    local UIStroke2 = Instance.new("UIStroke", MainFrame)
+    UIStroke2.Thickness = 1
+    UIStroke2.Transparency = 0.5
+    UIStroke2.Color = COLORS.LightCyan
+    UIStroke2.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+
+    TweenService:Create(
+        MainFrame,
+        TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
+        { Size = settings.Size }
+    ):Play()
+
+    local TopBar = Instance.new("Frame", MainFrame)
+    TopBar.BackgroundColor3 = COLORS.DarkGrayBlue
+    TopBar.BackgroundTransparency = 0.3
+    TopBar.BorderSizePixel = 0
+    TopBar.Size = UDim2.new(1, -14, 0, 32)
+    TopBar.Position = UDim2.new(0, 7, 0, 7)
+    Instance.new("UICorner", TopBar).CornerRadius = UDim.new(0, 12)
+
+    local TitleLabel = Instance.new("TextLabel", TopBar)
+    TitleLabel.BackgroundTransparency = 1
+    TitleLabel.Position = UDim2.new(0, 16, 0, 0)
+    TitleLabel.Size = UDim2.new(1, -80, 1, 0)
+    TitleLabel.Font = GothamBold
+    TitleLabel.Text = settings.Title
+    TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
+    TitleLabel.TextSize = 18
+    TitleLabel.TextColor3 = COLORS.White
+
+    Instance.new("UIGradient", TitleLabel).Color = ColorSequence.new({
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(34, 211, 238)),
+        ColorSequenceKeypoint.new(0.5, Color3.fromRGB(255, 255, 255)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(99, 102, 241))
+    })
+
+    local CloseButton = Instance.new("TextButton", TopBar)
+    CloseButton.Size = UDim2.fromOffset(24, 24)
+    CloseButton.Position = UDim2.new(1, -30, 0.5, -12)
+    CloseButton.BackgroundColor3 = COLORS.GrayBlue
+    CloseButton.Text = "X"
+    CloseButton.Font = GothamBold
+    CloseButton.TextSize = 14
+    CloseButton.TextColor3 = COLORS.Red
+    CloseButton.AutoButtonColor = true
+
+    Instance.new("UICorner", CloseButton).CornerRadius = UDim.new(0, 8)
+    local CloseStroke = Instance.new("UIStroke", CloseButton)
+    CloseStroke.Color = COLORS.LightCyan
+    CloseStroke.Transparency = 0.7
+    CloseStroke.Thickness = 1
+
+    CloseButton.MouseButton1Click:Connect(function()
+        TweenService:Create(
+            MainFrame,
+            TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.In),
+            { Size = UDim2.new(0, 0, 0, 0) }
+        ):Play()
+        task.delay(0.26, function()
+            MainFrame.Visible = false
+        end)
+    end)
+
+    local dragging = false
+    local dragInput, dragStart, startPos
+
+    local function update(input)
+        local delta = input.Position - dragStart
+        MainFrame.Position = UDim2.new(
+            startPos.X.Scale,
+            startPos.X.Offset + delta.X,
+            startPos.Y.Scale,
+            startPos.Y.Offset + delta.Y
+        )
+    end
+
+    TopBar.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = true
+            dragStart = input.Position
+            startPos = MainFrame.Position
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then
+                    dragging = false
+                end
+            end)
+        end
+    end)
+
+    TopBar.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+            dragInput = input
+        end
+    end)
+
+    UserInputService.InputChanged:Connect(function(input)
+        if dragging and input == dragInput then
+            update(input)
+        end
+    end)
+
+    local window = {
+        MainFrame = MainFrame,
+        Settings = settings,
+        Show = function()
+            MainFrame.Visible = true
+            TweenService:Create(
+                MainFrame,
+                TweenInfo.new(0.25, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
+                { Size = settings.Size }
+            ):Play()
+        end,
+        Hide = function()
+            TweenService:Create(
+                MainFrame,
+                TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.In),
+                { Size = UDim2.new(0, 0, 0, 0) }
+            ):Play()
+            task.delay(0.26, function()
+                MainFrame.Visible = false
+            end)
+        end,
+        Toggle = function(self)
+            if MainFrame.Visible then
+                self:Hide()
+            else
+                self:Show()
+            end
+        end,
+        Destroy = function()
+            MainGUI:Destroy()
+        end
+    }
+
+    return window
+end
+
+-- Create and show the UI
+local myWindow = CreateWindow({Title = "Chilli Interface"})
+myWindow:Show()

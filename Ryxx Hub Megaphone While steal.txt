@@ -1,0 +1,179 @@
+-- Ryxx Hub Megaphone script
+
+local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+
+local player = Players.LocalPlayer
+
+local function findMegaphone()
+    for _, tool in pairs(player.Backpack:GetChildren()) do
+        if tool:IsA("Tool") and (tool.Name:lower():find("mega") or tool.Name:lower():find("phone")) then
+            return tool
+        end
+    end
+    for _, tool in pairs(player.Character and player.Character:GetChildren() or {}) do
+        if tool:IsA("Tool") and (tool.Name:lower():find("mega") or tool.Name:lower():find("phone")) then
+            return tool
+        end
+    end
+    return nil
+end
+
+-- GUI Setup
+local gui = Instance.new("ScreenGui")
+gui.Name = "RyxxHubGui"
+gui.ResetOnSpawn = false
+gui.Parent = game.CoreGui
+
+local frame = Instance.new("Frame")
+frame.Size = UDim2.new(0, 160, 0, 90)
+frame.Position = UDim2.new(0.5, -80, 0.4, -45)
+frame.BackgroundColor3 = Color3.fromRGB(0, 180, 255)
+frame.BackgroundTransparency = 0.12
+frame.BorderSizePixel = 0
+frame.Active = true
+frame.Draggable = true
+frame.ClipsDescendants = true -- IMPORTANT
+frame.Parent = gui
+
+local corner = Instance.new("UICorner")
+corner.CornerRadius = UDim.new(0, 10)
+corner.Parent = frame
+
+-- Falling boxes container
+local particlesFolder = Instance.new("Folder")
+particlesFolder.Parent = frame
+
+-- Create falling box
+local function createFallingBox()
+    local box = Instance.new("Frame")
+    local size = math.random(6, 14)
+
+    box.Size = UDim2.new(0, size, 0, size)
+    box.Position = UDim2.new(
+        math.random(0, 100) / 100,
+        0,
+        -0.2,
+        0
+    )
+    box.BackgroundColor3 = Color3.fromRGB(180, 235, 255)
+    box.BackgroundTransparency = 0.45
+    box.BorderSizePixel = 0
+    box.Parent = particlesFolder
+
+    local boxCorner = Instance.new("UICorner")
+    boxCorner.CornerRadius = UDim.new(0, 3)
+    boxCorner.Parent = box
+
+    local speed = math.random(20, 40) / 100
+
+    RunService.RenderStepped:Connect(function(dt)
+        if box.Parent then
+            box.Position = box.Position + UDim2.new(0, 0, speed * dt, 0)
+            if box.Position.Y.Scale > 1.2 then
+                box.Position = UDim2.new(
+                    math.random(0, 100) / 100,
+                    0,
+                    -0.2,
+                    0
+                )
+            end
+        end
+    end)
+end
+
+-- Spawn falling boxes
+for i = 1, 10 do
+    createFallingBox()
+end
+
+-- Title
+local title = Instance.new("TextLabel")
+title.Size = UDim2.new(1, 0, 0, 28)
+title.BackgroundTransparency = 1
+title.Text = "Ryxx megaphone (free)"
+title.TextColor3 = Color3.fromRGB(255, 255, 255)
+title.TextSize = 14
+title.Font = Enum.Font.GothamBold
+title.ZIndex = 2
+title.Parent = frame
+
+-- Button
+local hitButton = Instance.new("TextButton")
+hitButton.Size = UDim2.new(0.9, 0, 0, 36)
+hitButton.Position = UDim2.new(0.05, 0, 0.45, 0)
+hitButton.BackgroundColor3 = Color3.fromRGB(0, 140, 255)
+hitButton.Text = "USE MEGAPHONE"
+hitButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+hitButton.TextSize = 13
+hitButton.Font = Enum.Font.GothamBold
+hitButton.ZIndex = 2
+hitButton.Parent = frame
+
+local btnCorner = Instance.new("UICorner")
+btnCorner.CornerRadius = UDim.new(0, 8)
+btnCorner.Parent = hitButton
+
+-- Dragging
+local dragging, dragInput, dragStart, startPos
+
+local function update(input)
+    local delta = input.Position - dragStart
+    frame.Position = UDim2.new(
+        startPos.X.Scale,
+        startPos.X.Offset + delta.X,
+        startPos.Y.Scale,
+        startPos.Y.Offset + delta.Y
+    )
+end
+
+frame.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = true
+        dragStart = input.Position
+        startPos = frame.Position
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                dragging = false
+            end
+        end)
+    end
+end)
+
+frame.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement then
+        dragInput = input
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if input == dragInput and dragging then
+        update(input)
+    end
+end)
+
+-- Button logic
+hitButton.MouseButton1Click:Connect(function()
+    local megaphoneTool = findMegaphone()
+    if not megaphoneTool then
+        hitButton.Text = "NO MEGAPHONE"
+        task.delay(1.2, function()
+            hitButton.Text = "USE MEGAPHONE"
+        end)
+        return
+    end
+
+    hitButton.Text = "HIT!"
+    task.delay(0.5, function()
+        hitButton.Text = "USE MEGAPHONE"
+    end)
+
+    if megaphoneTool.Parent ~= player.Character then
+        megaphoneTool.Parent = player.Character
+    end
+
+    megaphoneTool:Activate()
+end)
+
+print("Ryxx Hub LOADED (NEON + FALLING BOX ANIMATION)")

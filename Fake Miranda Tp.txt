@@ -1,0 +1,343 @@
+-- Serviços
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local TweenService = game:GetService("TweenService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+-- Player
+local LocalPlayer = Players.LocalPlayer
+local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
+
+-- ================= VARIÁVEIS =================
+local savedPosition = nil
+local isRagdollActive = false
+local useSecondMethod = false -- Variável para controlar o Second Method
+
+-- ================= GUI =================
+local MirandaGUI = Instance.new("ScreenGui")
+MirandaGUI.Name = "MirandaTweenPlus_STEAL_ONLY"
+MirandaGUI.ResetOnSpawn = false
+MirandaGUI.Parent = PlayerGui
+
+-- ================= PAINEL STEAL =================
+local InstantStealPanel = Instance.new("Frame", MirandaGUI)
+InstantStealPanel.Size = UDim2.new(0,160,0,244) -- Aumentado para acomodar novo botão
+InstantStealPanel.Position = UDim2.new(0.5,-80,0.5,-122)
+InstantStealPanel.BackgroundColor3 = Color3.fromRGB(23,23,31)
+InstantStealPanel.BackgroundTransparency = 0.13
+InstantStealPanel.BorderSizePixel = 0
+InstantStealPanel.Visible = false
+InstantStealPanel.Name = "InstantStealPanel"
+
+-- 🔥 DRAG LEGACY
+InstantStealPanel.Active = true
+InstantStealPanel.Draggable = true
+
+Instance.new("UICorner", InstantStealPanel).CornerRadius = UDim.new(0,12)
+Instance.new("UIStroke", InstantStealPanel).Thickness = 2
+
+-- Título
+local PanelTitle = Instance.new("TextLabel", InstantStealPanel)
+PanelTitle.Size = UDim2.new(1,0,0,20)
+PanelTitle.Text = "INSTANT STEAL"
+PanelTitle.Font = Enum.Font.Arcade
+PanelTitle.TextSize = 14
+PanelTitle.TextColor3 = Color3.new(1,1,1)
+PanelTitle.BackgroundTransparency = 1
+
+-- ================= FUNÇÃO BOTÃO =================
+local function makeButton(parent,text,size,pos,color)
+	local b = Instance.new("TextButton", parent)
+	b.Size = size
+	b.Position = pos
+	b.Text = text
+	b.Font = Enum.Font.Arcade
+	b.TextSize = 14
+	b.TextColor3 = Color3.new(1,1,1)
+	b.BackgroundColor3 = color
+	b.BorderSizePixel = 0
+	Instance.new("UICorner", b).CornerRadius = UDim.new(0,8)
+	return b
+end
+
+-- ================= BOTÕES =================
+local instantStealButton = makeButton(
+	InstantStealPanel,
+	"Save Pos",
+	UDim2.new(0.88,0,0,38),
+	UDim2.new(0.06,0,0,26),
+	Color3.fromRGB(0, 80, 200)  -- Azul para "Save Pos"
+)
+
+local AimbotButton = makeButton(
+	InstantStealPanel,
+	"Aimbot Teia",
+	UDim2.new(0.88,0,0,30),
+	UDim2.new(0.06,0,0,70),
+	Color3.fromRGB(0, 150, 255)  -- Azul claro para Aimbot Teia
+)
+
+local SecondMethodButton = makeButton(
+	InstantStealPanel,
+	"Second Method: OFF",
+	UDim2.new(0.88,0,0,28),
+	UDim2.new(0.06,0,0,106),
+	Color3.fromRGB(120, 120, 120)  -- Cinza quando desativado
+)
+
+local AutoKickButton = makeButton(
+	InstantStealPanel,
+	"AUTO KICK",
+	UDim2.new(0.58,-5,0,28),
+	UDim2.new(0.06,0,0,140),
+	Color3.fromRGB(200,0,60)
+)
+
+local AutoKickStatus = makeButton(
+	InstantStealPanel,
+	"ON",
+	UDim2.new(0.32,-5,0,28),
+	UDim2.new(0.62,0,0,140),
+	Color3.fromRGB(60,200,60)
+)
+
+local AutoResetButton = makeButton(
+	InstantStealPanel,
+	"Auto Reset: OFF",
+	UDim2.new(0.88,0,0,28),
+	UDim2.new(0.06,0,0,174),
+	Color3.fromRGB(120,120,120)
+)
+
+-- ================= BOTÃO FLUTUANTE =================
+local OpenButton = Instance.new("ImageButton", MirandaGUI)
+OpenButton.Size = UDim2.new(0,50,0,50)
+OpenButton.Position = UDim2.new(0,20,0.5,-25)
+OpenButton.Image = "rbxassetid://107306896864023"
+OpenButton.BackgroundTransparency = 1
+OpenButton.Name = "OpenButton"
+
+Instance.new("UICorner", OpenButton).CornerRadius = UDim.new(1,0)
+Instance.new("UIStroke", OpenButton).Thickness = 2
+
+-- ================= TOGGLES =================
+local Toggles = {
+	AutoKick = true,
+	AutoReset = false
+}
+
+-- ================= MÉTODO TRALALERO ROOF (MODIFICADO) =================
+local function TralaleroRoofTeleport(targetCFrame)
+	local character = LocalPlayer.Character
+	if not character then return end
+	
+	local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
+	if not humanoidRootPart then return end
+	
+	-- Usar o método Tralalero Roof para teleporte visual
+	local oldParent = humanoidRootPart.Parent
+	
+	-- Teleportar para a posição salva usando o mesmo método
+	humanoidRootPart.CFrame = targetCFrame
+	humanoidRootPart.Parent = nil
+	
+	task.wait(0.05)
+	humanoidRootPart.Parent = oldParent
+end
+
+-- ================= MÉTODO NORMAL (SEM VISUAL) =================
+local function NormalTeleport(targetCFrame)
+	local character = LocalPlayer.Character
+	if not character then return end
+	
+	local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
+	if not humanoidRootPart then return end
+	
+	-- Teleporte normal direto
+	humanoidRootPart.CFrame = targetCFrame
+end
+
+-- ================= FUNÇÃO RAGDOLL =================
+local function ActivateRagdoll()
+	if isRagdollActive then return end
+	
+	local character = LocalPlayer.Character
+	if not character then return end
+	
+	isRagdollActive = true
+	
+	-- Armazenar juntas originais
+	local originalJoints = {}
+	local originalMotors = {}
+	
+	-- Remover juntas e motores
+	for _, child in pairs(character:GetDescendants()) do
+		if child:IsA("Motor6D") then
+			originalMotors[child] = child.Enabled
+			child.Enabled = false
+		elseif child:IsA("JointInstance") then
+			originalJoints[child] = child.Parent
+			child.Parent = nil
+		end
+	end
+	
+	-- Adicionar constraints temporárias
+	local ballSocket = Instance.new("BallSocketConstraint")
+	ballSocket.Parent = character
+	
+	-- Restaurar após 3 segundos
+	task.wait(3)
+	
+	-- Remover constraint
+	ballSocket:Destroy()
+	
+	-- Restaurar juntas e motores
+	for joint, parent in pairs(originalJoints) do
+		joint.Parent = parent
+	end
+	
+	for motor, enabled in pairs(originalMotors) do
+		motor.Enabled = enabled
+	end
+	
+	isRagdollActive = false
+end
+
+-- ================= FUNÇÃO INSTANT STEAL =================
+local function ExecuteInstantSteal()
+	if not savedPosition then
+		-- Salvar posição atual
+		local character = LocalPlayer.Character
+		if not character then return end
+		
+		local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
+		if not humanoidRootPart then return end
+		
+		savedPosition = humanoidRootPart.CFrame
+		
+		-- Atualizar botão
+		instantStealButton.Text = "Instant Steal"
+		instantStealButton.BackgroundColor3 = Color3.fromRGB(255, 80, 80)
+		
+		print("Posição salva!")
+	else
+		-- Executar Instant Steal
+		if useSecondMethod then
+			-- Usar método normal (sem visual)
+			NormalTeleport(savedPosition)
+			print("Instant Steal executado (Second Method - Normal Teleport)")
+		else
+			-- Usar método Tralalero Roof (visual)
+			TralaleroRoofTeleport(savedPosition)
+			print("Instant Steal executado (First Method - Tralalero Roof)")
+		end
+		
+		-- Esperar 0.1 segundos
+		task.wait(0.1)
+		
+		-- Ativar ragdoll
+		ActivateRagdoll()
+	end
+end
+
+-- ================= FUNÇÃO AIMBOT TEIA =================
+local function ExecuteAimbotTeia()
+	local Net = require(ReplicatedStorage:WaitForChild("Packages").Net)
+	local UseItem = Net:RemoteEvent("UseItem")
+	
+	local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+	local humanoid = character:WaitForChild("Humanoid")
+	local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
+	local backpack = LocalPlayer:WaitForChild("Backpack")
+	
+	-- Função para encontrar o jogador mais próximo
+	local function getClosest()
+		local closestPlayer = nil
+		local shortestDistance = math.huge
+
+		for _, player in ipairs(Players:GetPlayers()) do
+			if player ~= LocalPlayer then
+				local targetChar = player.Character
+				local targetHRP = targetChar and targetChar:FindFirstChild("HumanoidRootPart")
+				if targetHRP then
+					local distance = (targetHRP.Position - humanoidRootPart.Position).Magnitude
+					if distance < shortestDistance then
+						shortestDistance = distance
+						closestPlayer = player
+					end
+				end
+			end
+		end
+
+		return closestPlayer
+	end
+	
+	-- Executar Aimbot Teia
+	local target = getClosest()
+	if not target then 
+		print("Nenhum alvo encontrado!")
+		return 
+	end
+
+	local targetHRP = target.Character and target.Character:FindFirstChild("HumanoidRootPart")
+	if not targetHRP then 
+		print("Alvo sem HumanoidRootPart!")
+		return 
+	end
+
+	local tool = backpack:FindFirstChild("Web Slinger") or character:FindFirstChild("Web Slinger")
+	if not tool then 
+		print("Web Slinger não encontrado na mochila ou personagem!")
+		return 
+	end
+
+	-- Equipar a ferramenta se estiver na mochila
+	if tool.Parent == backpack then
+		humanoid:EquipTool(tool)
+	end
+
+	-- Usar a teia no alvo
+	UseItem:FireServer(targetHRP.Position, targetHRP)
+	
+	print("Aimbot Teia executado no jogador: " .. target.Name)
+end
+
+-- ================= AÇÕES DOS BOTÕES =================
+instantStealButton.MouseButton1Click:Connect(ExecuteInstantSteal)
+
+AimbotButton.MouseButton1Click:Connect(function()
+	ExecuteAimbotTeia()
+end)
+
+SecondMethodButton.MouseButton1Click:Connect(function()
+	useSecondMethod = not useSecondMethod
+	
+	if useSecondMethod then
+		SecondMethodButton.Text = "Second Method: ON"
+		SecondMethodButton.BackgroundColor3 = Color3.fromRGB(60, 200, 60) -- Verde quando ativado
+		print("Second Method ATIVADO (Teleporte Normal)")
+	else
+		SecondMethodButton.Text = "Second Method: OFF"
+		SecondMethodButton.BackgroundColor3 = Color3.fromRGB(120, 120, 120) -- Cinza quando desativado
+		print("Second Method DESATIVADO (Tralalero Roof)")
+	end
+end)
+
+AutoKickButton.MouseButton1Click:Connect(function()
+	Toggles.AutoKick = not Toggles.AutoKick
+	AutoKickStatus.Text = Toggles.AutoKick and "ON" or "OFF"
+	AutoKickStatus.BackgroundColor3 = Toggles.AutoKick and Color3.fromRGB(60,200,60) or Color3.fromRGB(200,60,60)
+end)
+
+AutoResetButton.MouseButton1Click:Connect(function()
+	Toggles.AutoReset = not Toggles.AutoReset
+	AutoResetButton.Text = Toggles.AutoReset and "Auto Reset: ON" or "Auto Reset: OFF"
+	AutoResetButton.BackgroundColor3 = Toggles.AutoReset and Color3.fromRGB(60,200,60) or Color3.fromRGB(120,120,120)
+end)
+
+-- ================= ABRIR / FECHAR =================
+OpenButton.MouseButton1Click:Connect(function()
+	InstantStealPanel.Visible = not InstantStealPanel.Visible
+end)
+
+print("Miranda Tween+ STEAL ONLY carregado (Draggable Legacy).")
