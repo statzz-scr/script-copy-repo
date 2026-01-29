@@ -1,0 +1,544 @@
+-- AEZY HUB ðŸ‡µðŸ‡­
+-- discord.gg/DzpBf95AK
+
+local keyLocked = true
+local userUnlocked = false
+local savedKeys = {
+    ["AEZYHUB2025"] = true,
+    ["PREMIUM123"] = true,
+    ["VIPACCESS"] = true,
+    ["PHILIPPINES"] = true,
+}
+
+local vipUsers = {}
+
+-- IMPORTANT: Replace this with actual user IDs
+-- Example: vipUsers = {123456, 789012, 345678}
+
+-- Safe loading function for external scripts
+local function safeLoadScript(url)
+    local success, loadedScript = pcall(function()
+        return game:HttpGet(url, true)
+    end)
+    
+    if success and loadedScript then
+        local executeSuccess, executeError = pcall(function()
+            local func, compileError = loadstring(loadedScript)
+            if func then
+                return func()
+            else
+                error("Compile error: " .. tostring(compileError))
+            end
+        end)
+        
+        if not executeSuccess then
+            warn("[AEZY HUB] Script execution failed:", executeError)
+            return false, executeError
+        end
+        return true
+    else
+        warn("[AEZY HUB] Failed to load script from:", url, "Error:", loadedScript)
+        return false, loadedScript
+    end
+end
+
+local function makeDraggable(gui)
+    local dragging = false
+    local dragInput, dragStart, startPos
+    
+    local function update(input)
+        local delta = input.Position - dragStart
+        gui.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    end
+    
+    -- Allow dragging from the entire UI frame
+    gui.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = true
+            dragStart = input.Position
+            startPos = gui.Position
+            
+            -- Add a subtle visual feedback when dragging starts
+            local originalBackground = gui.BackgroundColor3
+            gui.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+            
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then
+                    dragging = false
+                    gui.BackgroundColor3 = originalBackground
+                end
+            end)
+        end
+    end)
+    
+    gui.InputChanged:Connect(function(input)
+        if (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) and dragging then
+            dragInput = input
+        end
+    end)
+    
+    game:GetService("UserInputService").InputChanged:Connect(function(input)
+        if dragging and input == dragInput then
+            update(input)
+        end
+    end)
+end
+
+local function checkUser()
+    local player = game:GetService("Players").LocalPlayer
+    if not player then return false end
+    
+    local playerId = player.UserId
+    for _, id in ipairs(vipUsers) do
+        if playerId == id then
+            return true
+        end
+    end
+    return false
+end
+
+local function loadSavedKey()
+    if not isfile then 
+        warn("[AEZY HUB] isfile function not available")
+        return nil 
+    end
+    if isfile("aezyhub_key.txt") then
+        local key = readfile("aezyhub_key.txt")
+        key = key:upper():gsub("%s+", "")
+        if savedKeys[key] then
+            return key
+        end
+    end
+    return nil
+end
+
+local function saveKey(key)
+    if not writefile then 
+        warn("[AEZY HUB] writefile function not available")
+        return 
+    end
+    pcall(function()
+        writefile("aezyhub_key.txt", key)
+    end)
+end
+
+local function checkLinkvertise(key)
+    -- Simple check against saved keys
+    if savedKeys[key] then
+        return true, "Premium"
+    end
+    
+    -- You can add actual Linkvertise API call here later
+    -- For now, return false
+    return false, "Invalid"
+end
+
+local function loadMainHubScript()
+    print("[AEZY HUB] Loading main hub script...")
+    
+    -- Try multiple sources for reliability
+    local sources = {
+        "add your github too if you want btw", -- Replace with your GitHub
+        "https://pastebin.com/raw/g4JpNNy1", -- Your pastebin
+        "not need but backup incase" -- Alternative source
+    }
+    
+    for i, source in ipairs(sources) do
+        print("[AEZY HUB] Trying source", i, ":", source)
+        local success, errorMsg = safeLoadScript(source)
+        if success then
+            print("[AEZY HUB] Successfully loaded from source", i)
+            return true
+        else
+            warn("[AEZY HUB] Failed to load from source", i, ":", errorMsg)
+        end
+        wait(0.5) -- Small delay between attempts
+    end
+    
+    -- If all sources fail, show an error
+    warn("[AEZY HUB] All sources failed. Please check your internet connection.")
+    return false
+end
+
+local function makeKeyUI()
+    -- Create the UI elements
+    local screenGui = Instance.new("ScreenGui")
+    screenGui.Name = "AEZYHUB_KeyVerification"
+    screenGui.Parent = game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui")
+    screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    screenGui.IgnoreGuiInset = true -- Important for mobile
+    
+    -- Detect if user is on mobile
+    local isMobile = game:GetService("UserInputService").TouchEnabled
+    
+    -- Responsive size based on device
+    local uiWidth = isMobile and 380 or 450
+    local uiHeight = isMobile and 420 or 350
+    
+    -- Main container with rounded corners
+    local ui = Instance.new("Frame")
+    ui.Name = "MainFrame"
+    ui.Size = UDim2.new(0, uiWidth, 0, uiHeight)
+    
+    -- Center the UI on screen
+    ui.Position = UDim2.new(0.5, -uiWidth/2, 0.5, -uiHeight/2)
+    ui.AnchorPoint = Vector2.new(0.5, 0.5)
+    ui.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
+    ui.BorderSizePixel = 0
+    ui.Active = true
+    ui.Selectable = true
+    
+    -- Add rounded corners effect using UICorner
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, 12)
+    corner.Parent = ui
+    
+    -- Add subtle shadow effect
+    local shadow = Instance.new("UIStroke")
+    shadow.Color = Color3.fromRGB(0, 0, 0)
+    shadow.Thickness = 2
+    shadow.Transparency = 0.7
+    shadow.Parent = ui
+    
+    ui.Parent = screenGui
+    
+    -- Make the entire UI draggable
+    makeDraggable(ui)
+    
+    -- Header with Philippine flag colors
+    local header = Instance.new("Frame")
+    header.Name = "Header"
+    header.Size = UDim2.new(1, 0, 0, 60)
+    header.Position = UDim2.new(0, 0, 0, 0)
+    header.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
+    header.BorderSizePixel = 0
+    header.Active = true
+    
+    local headerCorner = Instance.new("UICorner")
+    headerCorner.CornerRadius = UDim.new(0, 12, 0, 0)
+    headerCorner.Parent = header
+    
+    -- Add Philippine flag stripes to header
+    local flagStripes = Instance.new("Frame")
+    flagStripes.Size = UDim2.new(1, 0, 0, 4)
+    flagStripes.Position = UDim2.new(0, 0, 1, -4)
+    flagStripes.BackgroundColor3 = Color3.fromRGB(206, 17, 38) -- Philippine Red
+    flagStripes.BorderSizePixel = 0
+    flagStripes.Parent = header
+    
+    local flagStripes2 = Instance.new("Frame")
+    flagStripes2.Size = UDim2.new(1, 0, 0, 4)
+    flagStripes2.Position = UDim2.new(0, 0, 1, -8)
+    flagStripes2.BackgroundColor3 = Color3.fromRGB(0, 56, 168) -- Philippine Blue
+    flagStripes2.BorderSizePixel = 0
+    flagStripes2.Parent = header
+    
+    header.Parent = ui
+    
+    -- Title with Philippine flag emoji
+    local title = Instance.new("TextLabel")
+    title.Text = "âš¡ AEZY HUB ðŸ‡µðŸ‡­"
+    title.Size = UDim2.new(1, -40, 1, 0)
+    title.Position = UDim2.new(0, 20, 0, 0)
+    title.BackgroundTransparency = 1
+    title.TextColor3 = Color3.fromRGB(255, 255, 255)
+    title.Font = isMobile and Enum.Font.GothamBold or Enum.Font.GothamBlack
+    title.TextSize = isMobile and 22 or 24
+    title.TextXAlignment = Enum.TextXAlignment.Left
+    title.TextYAlignment = Enum.TextYAlignment.Center
+    title.Parent = header
+    
+    local subtitle = Instance.new("TextLabel")
+    subtitle.Text = "Key Verification System"
+    subtitle.Size = UDim2.new(1, -40, 0, 20)
+    subtitle.Position = UDim2.new(0, 20, 1, -25)
+    subtitle.BackgroundTransparency = 1
+    subtitle.TextColor3 = Color3.fromRGB(180, 180, 180)
+    subtitle.Font = Enum.Font.Gotham
+    subtitle.TextSize = isMobile and 12 or 14
+    subtitle.TextXAlignment = Enum.TextXAlignment.Left
+    subtitle.Parent = header
+    
+    -- Close button
+    local closeBtn = Instance.new("TextButton")
+    closeBtn.Text = "âœ•"
+    closeBtn.Size = UDim2.new(0, 40, 0, 40)
+    closeBtn.Position = UDim2.new(1, -45, 0.5, -20)
+    closeBtn.AnchorPoint = Vector2.new(0, 0.5)
+    closeBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 45)
+    closeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    closeBtn.Font = Enum.Font.GothamBold
+    closeBtn.TextSize = 20
+    closeBtn.AutoButtonColor = true
+    
+    local closeCorner = Instance.new("UICorner")
+    closeCorner.CornerRadius = UDim.new(0, 8)
+    closeCorner.Parent = closeBtn
+    
+    closeBtn.Parent = header
+    
+    closeBtn.MouseButton1Click:Connect(function()
+        screenGui:Destroy()
+        game:GetService("Players").LocalPlayer:Kick("AEZY HUB: Verification cancelled.")
+    end)
+    
+    -- Key input field
+    local keyBox = Instance.new("TextBox")
+    keyBox.Name = "KeyBox"
+    keyBox.PlaceholderText = "Enter your AEZY HUB key..."
+    keyBox.Size = UDim2.new(0.85, 0, 0, isMobile and 45 or 50)
+    keyBox.Position = UDim2.new(0.075, 0, 0.22, 0)
+    keyBox.BackgroundColor3 = Color3.fromRGB(45, 45, 50)
+    keyBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+    keyBox.PlaceholderColor3 = Color3.fromRGB(150, 150, 150)
+    keyBox.Font = Enum.Font.Gotham
+    keyBox.TextSize = isMobile and 16 or 18
+    keyBox.ClearTextOnFocus = false
+    keyBox.TextXAlignment = Enum.TextXAlignment.Center
+    keyBox.TextScaled = isMobile
+    keyBox.Active = true
+    
+    local keyBoxCorner = Instance.new("UICorner")
+    keyBoxCorner.CornerRadius = UDim.new(0, 10)
+    keyBoxCorner.Parent = keyBox
+    
+    local keyBoxStroke = Instance.new("UIStroke")
+    keyBoxStroke.Color = Color3.fromRGB(80, 80, 85)
+    keyBoxStroke.Thickness = 2
+    keyBoxStroke.Parent = keyBox
+    
+    keyBox.Parent = ui
+    
+    -- "GET KEY" Button
+    local getKeyBtn = Instance.new("TextButton")
+    getKeyBtn.Name = "GetKeyButton"
+    getKeyBtn.Text = "ðŸ”‘ GET KEY"
+    getKeyBtn.Size = UDim2.new(0.85, 0, 0, isMobile and 45 or 50)
+    getKeyBtn.Position = UDim2.new(0.075, 0, 0.38, 0)
+    getKeyBtn.BackgroundColor3 = Color3.fromRGB(60, 170, 80)
+    getKeyBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    getKeyBtn.Font = Enum.Font.GothamBold
+    getKeyBtn.TextSize = isMobile and 16 or 18
+    getKeyBtn.AutoButtonColor = true
+    
+    local getKeyCorner = Instance.new("UICorner")
+    getKeyCorner.CornerRadius = UDim.new(0, 10)
+    getKeyCorner.Parent = getKeyBtn
+    
+    getKeyBtn.Parent = ui
+    
+    -- Verify button with Philippine colors
+    local verifyBtn = Instance.new("TextButton")
+    verifyBtn.Name = "VerifyButton"
+    verifyBtn.Text = "âœ… VERIFY KEY"
+    verifyBtn.Size = UDim2.new(0.85, 0, 0, isMobile and 45 or 55)
+    verifyBtn.Position = UDim2.new(0.075, 0, isMobile and 0.54 or 0.50, 0)
+    verifyBtn.BackgroundColor3 = Color3.fromRGB(0, 56, 168)
+    verifyBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    verifyBtn.Font = Enum.Font.GothamBold
+    verifyBtn.TextSize = isMobile and 16 or 20
+    verifyBtn.AutoButtonColor = true
+    
+    local verifyCorner = Instance.new("UICorner")
+    verifyCorner.CornerRadius = UDim.new(0, 10)
+    verifyCorner.Parent = verifyBtn
+    
+    verifyBtn.Parent = ui
+    
+    -- Status message
+    local status = Instance.new("TextLabel")
+    status.Name = "StatusLabel"
+    status.Text = "Enter your key to access AEZY HUB ðŸ‡µðŸ‡­"
+    status.Size = UDim2.new(0.85, 0, 0, isMobile and 70 or 60)
+    status.Position = UDim2.new(0.075, 0, isMobile and 0.70 or 0.65, 0)
+    status.BackgroundTransparency = 1
+    status.TextColor3 = Color3.fromRGB(200, 200, 200)
+    status.Font = Enum.Font.Gotham
+    status.TextSize = isMobile and 14 or 16
+    status.TextWrapped = true
+    status.TextYAlignment = Enum.TextYAlignment.Top
+    status.Parent = ui
+    
+    -- Drag instructions
+    local dragInfo = Instance.new("TextLabel")
+    dragInfo.Text = isMobile and "DO THE KEY BRAH" or "AEZY HUB!!"
+    dragInfo.Size = UDim2.new(1, 0, 0, 30)
+    dragInfo.Position = UDim2.new(0, 0, 0.95, -30)
+    dragInfo.BackgroundTransparency = 1
+    dragInfo.TextColor3 = Color3.fromRGB(150, 150, 150)
+    dragInfo.Font = Enum.Font.Gotham
+    dragInfo.TextSize = isMobile and 11 or 12
+    dragInfo.TextWrapped = true
+    dragInfo.Parent = ui
+    
+    -- Footer with discord link
+    local footer = Instance.new("TextLabel")
+    footer.Text = "credits to tenacious for making ts join script haven and aezy!!"
+    footer.Size = UDim2.new(1, 0, 0, 25)
+    footer.Position = UDim2.new(0, 0, 1, -25)
+    footer.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
+    footer.TextColor3 = Color3.fromRGB(88, 101, 242)
+    footer.Font = Enum.Font.GothamBold
+    footer.TextSize = isMobile and 12 or 14
+    footer.Parent = ui
+    
+    -- Load saved key if exists
+    local savedKey = loadSavedKey()
+    if savedKey then
+        keyBox.Text = savedKey
+    end
+    
+    -- "GET KEY" Button Functionality
+    getKeyBtn.MouseButton1Click:Connect(function()
+        -- REPLACE THIS WITH YOUR ACTUAL LINKVERTISE LINK
+        local linkvertiseUrl = "https://link-to-your-key-system.com"
+        
+        status.Text = "ðŸ“‹ Visit our Discord to get a key!\ndiscord.gg/AJA79H33gV"
+        status.TextColor3 = Color3.fromRGB(255, 200, 50)
+        
+        -- Show a popup message
+        local popup = Instance.new("TextLabel")
+        popup.Text = "Join our Discord for keys!\ndiscord.gg/AJA79H33gV"
+        popup.Size = UDim2.new(0.8, 0, 0, 80)
+        popup.Position = UDim2.new(0.1, 0, 0.1, 0)
+        popup.BackgroundColor3 = Color3.fromRGB(0, 56, 168)
+        popup.TextColor3 = Color3.fromRGB(255, 255, 255)
+        popup.Font = Enum.Font.GothamBold
+        popup.TextSize = 14
+        popup.TextWrapped = true
+        popup.ZIndex = 100
+        popup.Parent = ui
+        
+        local popupCorner = Instance.new("UICorner")
+        popupCorner.CornerRadius = UDim.new(0, 8)
+        popupCorner.Parent = popup
+        
+        -- Remove popup after 3 seconds
+        task.delay(3, function()
+            if popup and popup.Parent then
+                popup:Destroy()
+            end
+        end)
+    end)
+    
+    -- Connect the verify button
+    verifyBtn.MouseButton1Click:Connect(function()
+        local key = keyBox.Text:upper():gsub("%s+", "")
+        
+        if key == "" then
+            status.Text = "âš ï¸ Please enter a key."
+            status.TextColor3 = Color3.fromRGB(255, 180, 50)
+            return
+        end
+        
+        if savedKeys[key] then
+            keyLocked = false
+            userUnlocked = true
+            status.Text = "âœ… Key verified!\nLoading AEZY HUB ðŸ‡µðŸ‡­..."
+            status.TextColor3 = Color3.fromRGB(100, 255, 150)
+            
+            saveKey(key)
+            
+            -- Disable buttons during loading
+            verifyBtn.Text = "â³ LOADING..."
+            verifyBtn.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+            verifyBtn.AutoButtonColor = false
+            getKeyBtn.AutoButtonColor = false
+            keyBox.TextEditable = false
+            
+            -- Small delay before loading
+            task.wait(1)
+            
+            -- Destroy UI first
+            screenGui:Destroy()
+            
+            -- Load the main hub script
+            local loadSuccess = loadMainHubScript()
+            
+            if not loadSuccess then
+                -- If loading fails, show error
+                game:GetService("Players").LocalPlayer:Kick("AEZY HUB: Failed to load main script. Please try again later.")
+            end
+            
+        else
+            local good, keyType = pcall(checkLinkvertise, key)
+            
+            if good and keyType == "Premium" then
+                keyLocked = false
+                userUnlocked = true
+                status.Text = "âœ… Premium key activated!\nLoading AEZY HUB ðŸ‡µðŸ‡­..."
+                status.TextColor3 = Color3.fromRGB(100, 255, 150)
+                
+                saveKey(key)
+                
+                -- Disable buttons during loading
+                verifyBtn.Text = "â³ LOADING..."
+                verifyBtn.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+                verifyBtn.AutoButtonColor = false
+                getKeyBtn.AutoButtonColor = false
+                keyBox.TextEditable = false
+                
+                -- Small delay before loading
+                task.wait(1)
+                
+                -- Destroy UI first
+                screenGui:Destroy()
+                
+                -- Load the main hub script
+                local loadSuccess = loadMainHubScript()
+                
+                if not loadSuccess then
+                    -- If loading fails, show error
+                    game:GetService("Players").LocalPlayer:Kick("AEZY HUB: Failed to load main script. Please try again later.")
+                end
+            else
+                status.Text = "âŒ Invalid key.\nClick 'GET KEY' for instructions!"
+                status.TextColor3 = Color3.fromRGB(255, 100, 100)
+            end
+        end
+    end)
+    
+    -- Allow pressing Enter to verify
+    keyBox.FocusLost:Connect(function(enterPressed)
+        if enterPressed and verifyBtn then
+            verifyBtn:Activate()
+        end
+    end)
+end
+
+-- Main execution with better error handling
+task.spawn(function()
+    local success, err = pcall(function()
+        -- Wait for player to be ready
+        local player = game:GetService("Players").LocalPlayer
+        if not player then
+            repeat task.wait() until game:GetService("Players").LocalPlayer
+        end
+        
+        -- First check for saved key
+        local savedKey = loadSavedKey()
+        if savedKey then
+            userUnlocked = true
+            print("[AEZY HUB] Saved key found, loading hub...")
+            local loadSuccess = loadMainHubScript()
+            if not loadSuccess then
+                makeKeyUI() -- Show UI if loading fails
+            end
+        elseif checkUser() then
+            print("[AEZY HUB] Whitelisted user detected, loading hub...")
+            local loadSuccess = loadMainHubScript()
+            if not loadSuccess then
+                makeKeyUI() -- Show UI if loading fails
+            end
+        else
+            print("[AEZY HUB] No saved key or whitelist, showing verification UI...")
+            makeKeyUI()
+        end
+    end)
+    
+    if not success then
+        warn("[AEZY HUB] Critical error:", err)
+        -- Even if there's an error, try to show the UI
+        pcall(makeKeyUI)
+    end
+end) by
