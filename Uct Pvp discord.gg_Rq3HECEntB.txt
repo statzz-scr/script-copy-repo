@@ -1,0 +1,371 @@
+-- Why Buy Lights? Just Buy Cxyro Hubs It's cheaper And Better https://discord.gg/Rq3HECEntB
+
+pcall(function()
+    if game.CoreGui:FindFirstChild("UCT_UI") then
+        game.CoreGui:FindFirstChild("UCT_UI"):Destroy()
+    end
+end)
+
+local Players           = game:GetService("Players")
+local RunService        = game:GetService("RunService")
+local UserInputService  = game:GetService("UserInputService")
+local Workspace         = game:GetService("Workspace")
+
+local LocalPlayer = Players.LocalPlayer
+
+-- Create main GUI in CoreGui (survives respawn)
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "UCT_UI"
+ScreenGui.ResetOnSpawn = false
+ScreenGui.Parent = game.CoreGui
+
+-- Main draggable frame
+local MainFrame = Instance.new("Frame")
+MainFrame.Size             = UDim2.new(0, 260, 0, 200)
+MainFrame.Position         = UDim2.new(1, -280, 0, 120)
+MainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+MainFrame.BorderSizePixel  = 0
+MainFrame.Active           = true
+MainFrame.Draggable        = true
+MainFrame.Parent           = ScreenGui
+
+local corner = Instance.new("UICorner")
+corner.CornerRadius = UDim.new(0, 8)
+corner.Parent = MainFrame
+
+local stroke = Instance.new("UIStroke")
+stroke.Color     = Color3.fromRGB(255, 50, 50)
+stroke.Thickness = 2
+stroke.Parent    = MainFrame
+
+-- Title bar
+local Title = Instance.new("TextLabel")
+Title.Text                  = "UCT PvP | discord.gg/uct"
+Title.Font                  = Enum.Font.GothamBold
+Title.TextColor3            = Color3.fromRGB(255, 255, 255)
+Title.TextSize              = 14
+Title.BackgroundTransparency = 1
+Title.Size                  = UDim2.new(1, -30, 0, 26)
+Title.Position              = UDim2.new(0, 10, 0, 6)
+Title.TextXAlignment        = Enum.TextXAlignment.Left
+Title.Parent                = MainFrame
+
+-- Minimize / Close button (toggles visibility)
+local MinimizeButton = Instance.new("TextButton")
+MinimizeButton.Text                  = "X"
+MinimizeButton.Font                  = Enum.Font.GothamBold
+MinimizeButton.TextSize              = 16
+MinimizeButton.TextColor3            = Color3.fromRGB(255, 60, 60)
+MinimizeButton.BackgroundTransparency = 1
+MinimizeButton.Size                  = UDim2.new(0, 25, 0, 25)
+MinimizeButton.Position              = UDim2.new(1, -28, 0, 6)
+MinimizeButton.Parent                = MainFrame
+
+MinimizeButton.MouseButton1Click:Connect(function()
+    MainFrame.Visible = not MainFrame.Visible
+end)
+
+-- ────────────────────────────────────────────────
+--   Toggle creator helper (returns a function that gives current toggle state)
+-- ────────────────────────────────────────────────
+
+local function CreateToggle(parent, text, yPos)
+    local Container = Instance.new("Frame")
+    Container.Size             = UDim2.new(1, -20, 0, 38)
+    Container.Position         = UDim2.new(0, 10, 0, yPos)
+    Container.BackgroundTransparency = 1
+    Container.Parent           = parent
+
+    local Label = Instance.new("TextLabel")
+    Label.Text                  = text
+    Label.Font                  = Enum.Font.GothamBold
+    Label.TextColor3            = Color3.fromRGB(255, 255, 255)
+    Label.TextSize              = 15
+    Label.BackgroundTransparency = 1
+    Label.Size                  = UDim2.new(1, -60, 1, 0)
+    Label.TextXAlignment        = Enum.TextXAlignment.Left
+    Label.Parent                = Container
+
+    local SwitchBg = Instance.new("Frame")
+    SwitchBg.Size             = UDim2.new(0, 36, 0, 18)
+    SwitchBg.Position         = UDim2.new(1, -46, 0.5, -9)
+    SwitchBg.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+    SwitchBg.Parent           = Container
+
+    local switchCorner = Instance.new("UICorner")
+    switchCorner.CornerRadius = UDim.new(1, 0)
+    switchCorner.Parent = SwitchBg
+
+    local Knob = Instance.new("Frame")
+    Knob.Size             = UDim2.new(0, 14, 0, 14)
+    Knob.Position         = UDim2.new(0, 2, 0.5, -7)
+    Knob.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
+    Knob.Parent           = SwitchBg
+
+    local knobCorner = Instance.new("UICorner")
+    knobCorner.CornerRadius = UDim.new(1, 0)
+    knobCorner.Parent = Knob
+
+    -- Separator line with rainbow pulse
+    local Separator = Instance.new("Frame")
+    Separator.Size             = UDim2.new(1, -20, 0, 1)
+    Separator.Position         = UDim2.new(0, 10, 0, yPos + 38)
+    Separator.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
+    Separator.Parent           = parent
+
+    local sepStroke = Instance.new("UIStroke")
+    sepStroke.Thickness = 1.3
+    sepStroke.Parent    = Separator
+
+    -- Rainbow pulse effect
+    task.spawn(function()
+        while Separator.Parent do
+            for i = 0, 1, 0.03 do
+                sepStroke.Color = Color3.fromHSV(0, 1, 0.6 + i * 0.4)
+                task.wait(0.05)
+            end
+            for i = 0, 1, 0.03 do
+                sepStroke.Color = Color3.fromHSV(0, 1, 1 - i * 0.4)
+                task.wait(0.05)
+            end
+        end
+    end)
+
+    local toggled = false
+
+    SwitchBg.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            toggled = not toggled
+            if toggled then
+                Knob:TweenPosition(UDim2.new(1, -16, 0.5, -7), Enum.EasingDirection.Out, Enum.EasingStyle.Sine, 0.12, true)
+                Knob.BackgroundColor3 = Color3.fromRGB(0, 255, 120)
+            else
+                Knob:TweenPosition(UDim2.new(0, 2, 0.5, -7), Enum.EasingDirection.Out, Enum.EasingStyle.Sine, 0.12, true)
+                Knob.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
+            end
+        end
+    end)
+
+    return function() return toggled end
+end
+
+-- Create the three toggles
+local GetBooster     = CreateToggle(MainFrame, "Booster",          40)
+local GetAntiKnock   = CreateToggle(MainFrame, "Anti Knockback",   80)
+local GetHitboxExp   = CreateToggle(MainFrame, "Hitbox Expander", 120)
+
+-- Default values
+local DefaultGravity   = 196.2
+local BoostGravity     = 40
+local DefaultJumpPower = 50
+local BoostJumpPower   = 30
+local SpeedMultiplier  = 27
+local CurrentGravity   = DefaultGravity
+
+-- Fake gravity hook via metatable (affects client-side reading only)
+pcall(function()
+    local mt = getrawmetatable(Workspace)
+    setreadonly(mt, false)
+    local oldIndex = mt.__index
+
+    mt.__index = newcclosure(function(self, key)
+        if self == Workspace and key == "Gravity" then
+            return CurrentGravity
+        end
+        return oldIndex(self, key)
+    end)
+
+    setreadonly(mt, true)
+end)
+
+local BoosterConnection
+local JumpBoostConnection
+
+local function UpdateBooster(enabled)
+    CurrentGravity = enabled and BoostGravity or DefaultGravity
+    Workspace.Gravity = CurrentGravity  -- still set it (some games read directly)
+
+    local char = LocalPlayer.Character
+    local hum  = char and char:FindFirstChildOfClass("Humanoid")
+    if hum then
+        hum.UseJumpPower = true
+        hum.JumpPower    = enabled and BoostJumpPower or DefaultJumpPower
+    end
+
+    if BoosterConnection   then BoosterConnection:Disconnect()   end
+    if JumpBoostConnection then JumpBoostConnection:Disconnect() end
+
+    if enabled then
+        BoosterConnection = RunService.Heartbeat:Connect(function()
+            local char = LocalPlayer.Character
+            if not char then return end
+            local hrp = char:FindFirstChild("HumanoidRootPart")
+            local hum = char:FindFirstChildOfClass("Humanoid")
+            if hrp and hum and hum.MoveDirection.Magnitude > 0 then
+                hrp.Velocity = Vector3.new(
+                    hum.MoveDirection.X * SpeedMultiplier,
+                    hrp.Velocity.Y,
+                    hum.MoveDirection.Z * SpeedMultiplier
+                )
+            end
+        end)
+
+        JumpBoostConnection = UserInputService.JumpRequest:Connect(function()
+            local char = LocalPlayer.Character
+            if not char then return end
+            local hrp = char:FindFirstChild("HumanoidRootPart")
+            local hum = char:FindFirstChildOfClass("Humanoid")
+            if hrp and hum then
+                hrp.Velocity = Vector3.new(hrp.Velocity.X, hum.JumpPower, hrp.Velocity.Z)
+            end
+        end)
+    end
+end
+
+-- Anti-Ragdoll / Anti-Knockback system
+local AntiRagdollActive    = false
+local AntiRagdollConnections = {}
+
+local function EnableAntiRagdoll()
+    if AntiRagdollActive then return end
+    AntiRagdollActive = true
+
+    local char     = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+    local humanoid = char:WaitForChild("Humanoid")
+    local hrp      = char:WaitForChild("HumanoidRootPart")
+    local camera   = Workspace.CurrentCamera
+    local animator = humanoid:WaitForChild("Animator")
+
+    local maxVelocity = 40
+    local clampVelocity = 25
+    local maxClamp = 15
+    local lastVelocity = Vector3.new()
+
+    local function IsRagdollState()
+        local state = humanoid:GetState()
+        return state == Enum.HumanoidStateType.Physics
+            or state == Enum.HumanoidStateType.Ragdoll
+            or state == Enum.HumanoidStateType.FallingDown
+            or state == Enum.HumanoidStateType.GettingUp
+    end
+
+    local function CleanRagdollEffects()
+        for _, obj in pairs(char:GetDescendants()) do
+            if obj:IsA("BallSocketConstraint") or obj:IsA("NoCollisionConstraint") or obj:IsA("HingeConstraint")
+                or (obj:IsA("Attachment") and (obj.Name == "A" or obj.Name == "B")) then
+                obj:Destroy()
+            elseif obj:IsA("BodyVelocity") or obj:IsA("BodyPosition") or obj:IsA("BodyGyro") then
+                obj:Destroy()
+            elseif obj:IsA("Motor6D") then
+                obj.Enabled = true
+            end
+        end
+
+        for _, track in pairs(animator:GetPlayingAnimationTracks()) do
+            local name = track.Animation and track.Animation.Name:lower() or ""
+            if name:find("rag") or name:find("fall") or name:find("hurt") or name:find("down") then
+                track:Stop(0)
+            end
+        end
+    end
+
+    local function ReEnableControls()
+        pcall(function()
+            require(LocalPlayer:WaitForChild("PlayerScripts"):WaitForChild("PlayerModule"))
+                :GetControls():Enable()
+        end)
+    end
+
+    table.insert(AntiRagdollConnections, humanoid.StateChanged:Connect(function(_, newState)
+        if IsRagdollState() then
+            humanoid:ChangeState(Enum.HumanoidStateType.Running)
+            CleanRagdollEffects()
+            camera.CameraSubject = humanoid
+            ReEnableControls()
+        end
+    end))
+
+    table.insert(AntiRagdollConnections, RunService.Heartbeat:Connect(function()
+        if IsRagdollState() then
+            CleanRagdollEffects()
+            local vel = hrp.AssemblyLinearVelocity
+            local velChange = (vel - lastVelocity).Magnitude
+            if velChange > maxVelocity and vel.Magnitude > clampVelocity then
+                hrp.AssemblyLinearVelocity = vel.Unit * math.min(vel.Magnitude, maxClamp)
+            end
+            lastVelocity = vel
+        end
+    end))
+
+    table.insert(AntiRagdollConnections, char.DescendantAdded:Connect(function()
+        if IsRagdollState() then CleanRagdollEffects() end
+    end))
+
+    ReEnableControls()
+    CleanRagdollEffects()
+
+    table.insert(AntiRagdollConnections, LocalPlayer.CharacterAdded:Connect(function(newChar)
+        char     = newChar
+        humanoid = newChar:WaitForChild("Humanoid")
+        hrp      = newChar:WaitForChild("HumanoidRootPart")
+        animator = humanoid:WaitForChild("Animator")
+        lastVelocity = Vector3.new()
+        ReEnableControls()
+        CleanRagdollEffects()
+    end))
+end
+
+local function DisableAntiRagdoll()
+    AntiRagdollActive = false
+    for _, conn in pairs(AntiRagdollConnections) do
+        conn:Disconnect()
+    end
+    AntiRagdollConnections = {}
+end
+
+-- Hitbox Expander
+local HitboxConnection
+
+local function UpdateHitboxExpander(enabled)
+    if HitboxConnection then
+        HitboxConnection:Disconnect()
+        HitboxConnection = nil
+    end
+
+    if enabled then
+        HitboxConnection = RunService.RenderStepped:Connect(function()
+            for _, player in pairs(Players:GetPlayers()) do
+                if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+                    local hrp = player.Character.HumanoidRootPart
+                    hrp.Size         = Vector3.new(12, 12, 12)
+                    hrp.Transparency = 0.4
+                    hrp.Color        = Color3.fromRGB(255, 255, 255)
+                    hrp.Material     = Enum.Material.SmoothPlastic
+                    hrp.CanCollide   = false
+                end
+            end
+        end)
+    else
+        -- Reset hitboxes
+        for _, player in pairs(Players:GetPlayers()) do
+            if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+                local hrp = player.Character.HumanoidRootPart
+                hrp.Size         = Vector3.new(2, 2, 1)
+                hrp.Transparency = 1
+                hrp.Material     = Enum.Material.Plastic
+                hrp.CanCollide   = true
+            end
+        end
+    end
+end
+
+-- Main update loop (runs every frame)
+RunService.Heartbeat:Connect(function()
+    UpdateBooster(GetBooster())
+    if GetAntiKnock() then
+        EnableAntiRagdoll()
+    else
+        DisableAntiRagdoll()
+    end
+    UpdateHitboxExpander(GetHitboxExp())
+end)

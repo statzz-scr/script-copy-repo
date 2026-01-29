@@ -1,0 +1,124 @@
+-- Why Buy Lights? Just Buy Cxyro Hubs It's cheaper And Better https://discord.gg/Rq3HECEntB
+
+local Players       = game:GetService("Players")
+local TweenService  = game:GetService("TweenService")   -- unused in this script but kept for potential future use
+local CoreGui       = game:GetService("CoreGui")
+local StarterGui    = game:GetService("StarterGui")
+local Workspace     = game:GetService("Workspace")
+
+local LocalPlayer   = Players.LocalPlayer
+
+-- Create the ScreenGui
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "SillyPermDesync"
+screenGui.ResetOnSpawn = false
+screenGui.Parent = CoreGui
+
+-- Main draggable frame
+local mainFrame = Instance.new("Frame")
+mainFrame.Size             = UDim2.new(0, 250, 0, 120)
+mainFrame.Position         = UDim2.new(0.5, -125, 0.5, -60)
+mainFrame.BackgroundColor3 = Color3.fromRGB(22, 22, 22)
+mainFrame.Active           = true
+mainFrame.Draggable        = true
+mainFrame.Parent           = screenGui
+
+local corner = Instance.new("UICorner")
+corner.CornerRadius = UDim.new(0, 10)
+corner.Parent = mainFrame
+
+local stroke = Instance.new("UIStroke")
+stroke.Color     = Color3.fromRGB(255, 255, 255)
+stroke.Thickness = 4
+stroke.Parent    = mainFrame
+
+-- Title
+local title = Instance.new("TextLabel")
+title.Text                  = "silly’s perm desync"
+title.Font                  = Enum.Font.GothamBold
+title.TextSize              = 16
+title.TextColor3            = Color3.fromRGB(240, 240, 240)
+title.BackgroundTransparency = 1
+title.Size                  = UDim2.new(1, 0, 0, 30)
+title.Position              = UDim2.new(0, 0, 0, 5)
+title.Parent                = mainFrame
+
+-- Discord invite
+local discordLabel = Instance.new("TextLabel")
+discordLabel.Text                  = "discord.gg/6pPYTwBq"
+discordLabel.Font                  = Enum.Font.Gotham
+discordLabel.TextSize              = 12
+discordLabel.TextColor3            = Color3.fromRGB(240, 240, 240)
+discordLabel.BackgroundTransparency = 1
+discordLabel.Size                  = UDim2.new(1, 0, 0, 20)
+discordLabel.Position              = UDim2.new(0, 0, 0, 30)
+discordLabel.TextScaled            = false
+discordLabel.Parent                = mainFrame
+
+-- The activation button
+local enableButton = Instance.new("TextButton")
+enableButton.Text                  = "enable perm desync"
+enableButton.Font                  = Enum.Font.GothamBold
+enableButton.TextSize              = 14
+enableButton.TextColor3            = Color3.fromRGB(240, 240, 240)
+enableButton.Size                  = UDim2.new(0.8, 0, 0, 30)
+enableButton.Position              = UDim2.new(0.1, 0, 0.6, 0)
+enableButton.BackgroundColor3      = Color3.fromRGB(0, 0, 0)
+enableButton.Parent                = mainFrame
+
+local buttonCorner = Instance.new("UICorner")
+buttonCorner.CornerRadius = UDim.new(0, 8)
+buttonCorner.Parent = enableButton
+
+-- ────────────────────────────────────────────────
+--                  Desync Logic
+-- ────────────────────────────────────────────────
+
+enableButton.MouseButton1Click:Connect(function()
+    -- Quick visual feedback
+    enableButton.BackgroundColor3 = Color3.fromRGB(14, 210, 144) -- success green
+    
+    task.delay(1, function()
+        enableButton.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    end)
+
+    -- Attempt to get current character
+    local character = LocalPlayer.Character
+    if not character then
+        StarterGui:SetCore("SendNotification", {
+            Title = "Silly desync",
+            Text = "No character found. Try again when loaded.",
+            Duration = 4
+        })
+        return
+    end
+
+    -- Kill humanoid → clear children → replace character with empty model
+    local humanoid = character:FindFirstChildWhichIsA("Humanoid")
+    if humanoid then
+        humanoid:ChangeState(Enum.HumanoidStateType.Dead)
+    end
+
+    character:ClearAllChildren()
+
+    -- Create dummy empty model and force-assign it
+    local dummyModel = Instance.new("Model")
+    dummyModel.Name = "DesyncDummy"
+    dummyModel.Parent = Workspace
+
+    LocalPlayer.Character = dummyModel
+    task.wait()                    -- small wait helps sync the assignment
+
+    -- Most aggressive desync step — setting to empty table
+    LocalPlayer.Character = {}
+
+    -- Clean up dummy
+    dummyModel:Destroy()
+
+    -- Notify user
+    StarterGui:SetCore("SendNotification", {
+        Title   = "Silly desync",
+        Text    = "Desync enabled — will persist until you close Roblox",
+        Duration = 5
+    })
+end)

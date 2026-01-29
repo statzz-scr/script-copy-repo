@@ -1,0 +1,115 @@
+-- Why Buy Lights? Just Buy Cxyro Hubs It's cheaper And Better https://discord.gg/Rq3HECEntB
+
+local CoreGui = game:GetService("CoreGui")
+local UserInputService = game:GetService("UserInputService")
+
+-- ────────────────────────────────────────────────
+--                Create ScreenGui
+-- ────────────────────────────────────────────────
+
+local screenGui = Instance.new("ScreenGui")
+screenGui.ResetOnSpawn    = false
+screenGui.IgnoreGuiInset  = true
+screenGui.Name            = "SillyInstaKick"
+screenGui.Parent          = CoreGui
+
+-- ────────────────────────────────────────────────
+--                Main Outer Frame
+-- ────────────────────────────────────────────────
+
+local mainFrame = Instance.new("Frame")
+mainFrame.Size             = UDim2.new(0, 180, 0, 120)
+mainFrame.Position         = UDim2.new(0, 150, 0, 70)   -- top-left-ish offset
+mainFrame.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+mainFrame.BorderSizePixel  = 0
+mainFrame.Parent           = screenGui
+
+local outerCorner = Instance.new("UICorner")
+outerCorner.CornerRadius = UDim.new(0, 14)
+outerCorner.Parent = mainFrame
+
+-- Inner black panel
+local innerFrame = Instance.new("Frame")
+innerFrame.Size             = UDim2.new(1, -6, 1, -6)
+innerFrame.Position         = UDim2.new(0, 3, 0, 3)
+innerFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+innerFrame.BorderSizePixel  = 0
+innerFrame.Parent           = mainFrame
+
+local innerCorner = Instance.new("UICorner")
+innerCorner.CornerRadius = UDim.new(0, 12)
+innerCorner.Parent = innerFrame
+
+-- ────────────────────────────────────────────────
+--                Text Labels
+-- ────────────────────────────────────────────────
+
+local titleLabel = Instance.new("TextLabel")
+titleLabel.Size                  = UDim2.new(1, 0, 0, 28)
+titleLabel.Position              = UDim2.new(0, 0, 0, 6)
+titleLabel.BackgroundTransparency = 1
+titleLabel.Text                  = "silly insta-kick"
+titleLabel.TextColor3            = Color3.fromRGB(255, 255, 255)
+titleLabel.TextSize              = 20
+titleLabel.Font                  = Enum.Font.SourceSansBold
+titleLabel.Parent                = innerFrame
+
+local creditLabel = Instance.new("TextLabel")
+creditLabel.Size                  = UDim2.new(1, 0, 0, 16)
+creditLabel.Position              = UDim2.new(0, 0, 0, 36)
+creditLabel.BackgroundTransparency = 1
+creditLabel.Text                  = "@sillysokewl on tt"
+creditLabel.TextColor3            = Color3.fromRGB(200, 200, 200)
+creditLabel.TextSize              = 14
+creditLabel.Font                  = Enum.Font.SourceSans
+creditLabel.Parent                = innerFrame
+
+-- ────────────────────────────────────────────────
+--                Leave Button
+-- ────────────────────────────────────────────────
+
+local buttonContainer = Instance.new("Frame")
+buttonContainer.Size             = UDim2.new(1, -16, 0, 44)
+buttonContainer.Position         = UDim2.new(0, 8, 0, 60)
+buttonContainer.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+buttonContainer.BorderSizePixel  = 0
+buttonContainer.Parent           = innerFrame
+
+local containerCorner = Instance.new("UICorner")
+containerCorner.CornerRadius = UDim.new(0, 10)
+containerCorner.Parent = buttonContainer
+
+local leaveButton = Instance.new("TextButton")
+leaveButton.Size             = UDim2.new(1, -6, 1, -6)
+leaveButton.Position         = UDim2.new(0, 3, 0, 3)
+leaveButton.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+leaveButton.Text             = "leave game"
+leaveButton.TextColor3       = Color3.fromRGB(255, 255, 255)
+leaveButton.TextSize         = 18
+leaveButton.Font             = Enum.Font.SourceSansBold
+leaveButton.BorderSizePixel  = 0
+leaveButton.Parent           = buttonContainer
+
+local buttonCorner = Instance.new("UICorner")
+buttonCorner.CornerRadius = UDim.new(0, 10)
+buttonCorner.Parent = leaveButton
+
+-- ────────────────────────────────────────────────
+--                Button Functionality
+-- ────────────────────────────────────────────────
+
+leaveButton.MouseButton1Click:Connect(function()
+    -- Visual feedback: flash green for 1 second
+    leaveButton.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
+    
+    task.delay(1, function()
+        leaveButton.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    end)
+    
+    -- Immediately close Roblox client
+    game:Shutdown()
+end)
+
+-- Removed unused event connections:
+--   mainFrame.InputBegan, mainFrame.InputChanged, UserInputService.InputChanged
+-- They were connected but had empty functions → no purpose

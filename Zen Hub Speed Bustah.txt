@@ -1,0 +1,136 @@
+local lp = game.Players.LocalPlayer
+local PlayerGui = lp:WaitForChild("PlayerGui")
+local UserInputService = game:GetService("UserInputService")
+
+-- Main GUI Container
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "ZenTurboFinal"
+screenGui.Parent = PlayerGui
+screenGui.ResetOnSpawn = false
+
+-- Main Background Frame
+local mainFrame = Instance.new("Frame")
+mainFrame.Name = "MainFrame"
+mainFrame.Size = UDim2.new(0, 190, 0, 95)
+mainFrame.Position = UDim2.new(1, -200, 0, 20)
+mainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+mainFrame.BackgroundTransparency = 0.2
+mainFrame.Parent = screenGui
+mainFrame.Active = true
+
+local frameCorner = Instance.new("UICorner")
+frameCorner.CornerRadius = UDim.new(0, 12)
+frameCorner.Parent = mainFrame
+
+-- Zen Hub Title
+local titleLabel = Instance.new("TextLabel")
+titleLabel.Name = "ZenHubTitle"
+titleLabel.Size = UDim2.new(1, 0, 0, 30)
+titleLabel.Position = UDim2.new(0, 0, 0, 5)
+titleLabel.BackgroundTransparency = 1
+titleLabel.Text = "Zen Hub"
+titleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+titleLabel.Font = Enum.Font.GothamBold
+titleLabel.TextSize = 18
+titleLabel.Parent = mainFrame
+
+-- Turbo Speed Button
+local turboButton = Instance.new("TextButton")
+turboButton.Name = "TurboButton"
+turboButton.Size = UDim2.new(0, 170, 0, 45)
+turboButton.Position = UDim2.new(0, 10, 0, 40)
+turboButton.BackgroundColor3 = Color3.fromRGB(231, 76, 60)
+turboButton.Text = "Turbo: OFF (F)"
+turboButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+turboButton.Font = Enum.Font.GothamBold
+turboButton.TextSize = 14
+turboButton.Parent = mainFrame
+
+local turboCorner = Instance.new("UICorner")
+turboCorner.CornerRadius = UDim.new(0, 8)
+turboCorner.Parent = turboButton
+
+-----------------------------------------------------------
+-- Draggable Functionality
+-----------------------------------------------------------
+local dragging, dragInput, dragStart, startPos
+local function update(input)
+    local delta = input.Position - dragStart
+    mainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+end
+
+local function startDragging(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = true
+        dragStart = input.Position
+        startPos = mainFrame.Position
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then dragging = false end
+        end)
+    end
+end
+
+mainFrame.InputBegan:Connect(startDragging)
+titleLabel.InputBegan:Connect(startDragging)
+UserInputService.InputChanged:Connect(function(input)
+    if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+        update(input)
+    end
+end)
+
+-----------------------------------------------------------
+-- Teleport & Turbo Logic
+-----------------------------------------------------------
+local turboActive = false
+local constantSpeed = 37.5
+
+-- Function to find and teleport to your base
+local function teleportToBase()
+    local character = lp.Character
+    local hrp = character and character:FindFirstChild("HumanoidRootPart")
+    
+    if hrp then
+        -- Searches for your base part in the workspace based on your image
+        for _, v in pairs(workspace:GetDescendants()) do
+            if v:IsA("TextLabel") and (v.Text == "Zen's Base" or v.Text == "YOUR BASE") then
+                local basePart = v.Parent
+                if basePart and basePart:IsA("BasePart") then
+                    hrp.CFrame = basePart.CFrame + Vector3.new(0, 5, 0) -- Teleport slightly above
+                    break
+                end
+            end
+        end
+    end
+end
+
+local function toggleTurbo()
+    turboActive = not turboActive
+    if turboActive then
+        turboButton.Text = "Turbo: ON (F)"
+        turboButton.BackgroundColor3 = Color3.fromRGB(46, 204, 113)
+        teleportToBase() -- Teleport immediately when turning ON
+    else
+        turboButton.Text = "Turbo: OFF (F)"
+        turboButton.BackgroundColor3 = Color3.fromRGB(231, 76, 60)
+    end
+end
+
+-- Speed Loop
+task.spawn(function()
+    while true do
+        if turboActive then
+            local char = lp.Character
+            local hrp = char and char:FindFirstChild("HumanoidRootPart")
+            if hrp then
+                hrp.Velocity = hrp.CFrame.LookVector * constantSpeed
+            end
+        end
+        task.wait(0.1)
+    end
+end)
+
+turboButton.MouseButton1Click:Connect(toggleTurbo)
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+    if gameProcessed then return end
+    if input.KeyCode == Enum.KeyCode.F then toggleTurbo() end
+end)

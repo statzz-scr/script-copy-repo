@@ -1,0 +1,105 @@
+-- Why Buy Lights? Just Buy Cxyro Hubs It's cheaper And Better https://discord.gg/Rq3HECEntB
+
+local CoreGui     = game:GetService("CoreGui")
+local UserInputService = game:GetService("UserInputService")
+
+-- Create main ScreenGui
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "SillyKickGui"
+screenGui.ResetOnSpawn = false
+screenGui.IgnoreGuiInset = true
+screenGui.Parent = CoreGui
+
+-- Main outer frame (gray background)
+local mainFrame = Instance.new("Frame")
+mainFrame.Size       = UDim2.new(0, 180, 0, 120)
+mainFrame.Position   = UDim2.new(0, 150, 0, 70)
+mainFrame.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+mainFrame.BorderSizePixel = 0
+mainFrame.Parent = screenGui
+
+local outerCorner = Instance.new("UICorner")
+outerCorner.CornerRadius = UDim.new(0, 14)
+outerCorner.Parent = mainFrame
+
+-- Inner dark background frame
+local innerFrame = Instance.new("Frame")
+innerFrame.Size       = UDim2.new(1, -6, 1, -6)
+innerFrame.Position   = UDim2.new(0, 3, 0, 3)
+innerFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+innerFrame.BorderSizePixel = 0
+innerFrame.Parent = mainFrame
+
+local innerCorner = Instance.new("UICorner")
+innerCorner.CornerRadius = UDim.new(0, 12)
+innerCorner.Parent = innerFrame
+
+-- Title label
+local titleLabel = Instance.new("TextLabel")
+titleLabel.Size              = UDim2.new(1, 0, 0, 28)
+titleLabel.Position          = UDim2.new(0, 0, 0, 6)
+titleLabel.BackgroundTransparency = 1
+titleLabel.Text              = "silly insta-kick"
+titleLabel.TextColor3        = Color3.fromRGB(255, 255, 255)
+titleLabel.TextSize          = 20
+titleLabel.Font              = Enum.Font.SourceSansBold
+titleLabel.Parent = innerFrame
+
+-- Credit / handle label
+local creditLabel = Instance.new("TextLabel")
+creditLabel.Size              = UDim2.new(1, 0, 0, 16)
+creditLabel.Position          = UDim2.new(0, 0, 0, 36)
+creditLabel.BackgroundTransparency = 1
+creditLabel.Text              = "@sillysokewl on tt"
+creditLabel.TextColor3        = Color3.fromRGB(200, 200, 200)
+creditLabel.TextSize          = 14
+creditLabel.Font              = Enum.Font.SourceSans
+creditLabel.Parent = innerFrame
+
+-- Button container frame
+local buttonFrame = Instance.new("Frame")
+buttonFrame.Size       = UDim2.new(1, -16, 0, 44)
+buttonFrame.Position   = UDim2.new(0, 8, 0, 60)
+buttonFrame.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+buttonFrame.BorderSizePixel = 0
+buttonFrame.Parent = innerFrame
+
+local buttonFrameCorner = Instance.new("UICorner")
+buttonFrameCorner.CornerRadius = UDim.new(0, 10)
+buttonFrameCorner.Parent = buttonFrame
+
+-- The actual clickable button
+local leaveButton = Instance.new("TextButton")
+leaveButton.Size              = UDim2.new(1, -6, 1, -6)
+leaveButton.Position          = UDim2.new(0, 3, 0, 3)
+leaveButton.BackgroundColor3  = Color3.fromRGB(0, 0, 0)
+leaveButton.Text              = "leave game"
+leaveButton.TextColor3        = Color3.fromRGB(255, 255, 255)
+leaveButton.TextSize          = 18
+leaveButton.Font              = Enum.Font.SourceSansBold
+leaveButton.BorderSizePixel   = 0
+leaveButton.Parent = buttonFrame
+
+local buttonCorner = Instance.new("UICorner")
+buttonCorner.CornerRadius = UDim.new(0, 10)
+buttonCorner.Parent = leaveButton
+
+-- ────────────────────────────────────────────────
+--                  Button functionality
+-- ────────────────────────────────────────────────
+
+leaveButton.MouseButton1Click:Connect(function()
+    -- Quick visual feedback
+    leaveButton.BackgroundColor3 = Color3.fromRGB(0, 255, 0)   -- green flash
+    
+    task.delay(1, function()
+        leaveButton.BackgroundColor3 = Color3.fromRGB(0, 0, 0) -- back to normal
+    end)
+
+    -- Actually leave the game
+    game:Shutdown()
+end)
+
+-- Note: The original script had several empty/connected-but-unused events:
+--   v3.InputBegan, v3.InputChanged, UserInputService.InputChanged
+-- They were removed here as they did nothing.

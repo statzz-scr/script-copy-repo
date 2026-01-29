@@ -1,0 +1,80 @@
+-- Deobfed by mango hub
+local var1 = game:GetService("Players")
+local var2 = game:GetService("RunService")
+local var3 = game:GetService("CoreGui")
+local var4 = var1.LocalPlayer
+local var5 = var3:FindFirstChild("RtxDesyncV2")
+local var6 = var3.RtxDesyncV2:Destroy()
+local var7 = Instance.new("ScreenGui")
+var7.Name = "RtxDesyncV2"
+var7.Parent = var3
+local var8 = Instance.new("Frame")
+var8.Parent = var7
+var8.Size = UDim2.new(0, 160, 0, 130)
+var8.Position = UDim2.new(0.78, 0, 0.45, 0)
+var8.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+var8.BackgroundTransparency = 0.35
+var8.BorderSizePixel = 0
+var8.Active = true
+var8.Draggable = true
+local var9 = Instance.new("UICorner")
+var9.CornerRadius = UDim.new(0, 12)
+var9.Parent = var8
+local var10 = Instance.new("TextLabel")
+var10.Parent = var8
+var10.Text = "Rtx Desync V2"
+var10.Font = Enum.Font.Code
+var10.TextColor3 = Color3.fromRGB(255, 255, 255)
+var10.TextSize = 20
+var10.BackgroundTransparency = 1
+var10.Position = UDim2.new(0, 0, 0, 5)
+var10.Size = UDim2.new(1, 0, 0, 25)
+local var11 = Instance.new("TextButton")
+var11.Parent = var8
+var11.Size = UDim2.new(0.9, 0, 0, 35)
+var11.Position = UDim2.new(0.05, 0, 0.25, 0)
+var11.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+var11.Text = "Desync V2"
+var11.Font = Enum.Font.Code
+var11.TextColor3 = Color3.fromRGB(255, 255, 255)
+var11.TextSize = 17
+var11.BorderSizePixel = 0
+local var12 = Instance.new("UICorner", var11)
+var12.CornerRadius = UDim.new(0, 8)
+local var13 = Instance.new("UIStroke", var11)
+var13.Thickness = 1.5
+var13.Color = Color3.fromRGB(60, 60, 60)
+local var14 = Instance.new("TextButton")
+var14.Parent = var8
+var14.Size = UDim2.new(0.9, 0, 0, 35)
+var14.Position = UDim2.new(0.05, 0, 0.65, 0)
+var14.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+var14.Text = "Unwalk Anim"
+var14.Font = Enum.Font.Code
+var14.TextColor3 = Color3.fromRGB(255, 255, 255)
+var14.TextSize = 17
+var14.BorderSizePixel = 0
+local var15 = Instance.new("UICorner", var14)
+var15.CornerRadius = UDim.new(0, 8)
+local var16 = Instance.new("UIStroke", var14)
+var16.Thickness = 1.5
+var16.Color = Color3.fromRGB(60, 60, 60)
+local var17 = var11.MouseButton1Click:Connect(function()
+    local var18 = object:FindFirstChildWhichIsA("Humanoid")
+    var18:ChangeState(Enum.HumanoidStateType.Dead)
+    object:ClearAllChildren()
+    local var19 = Instance.new("Model")
+    var19.Parent = workspace
+    var4.Character = var19
+    task.wait()
+    var4.Character = {}
+    var19:Destroy()
+end)
+local var20 = var14.MouseButton1Click:Connect(function()
+    local var21 = object:FindFirstChildOfClass("Humanoid")
+    local var22 = var21:FindFirstChildWhichIsA("Animator")
+    for _, child in var22:GetChildren() do
+        local var23 = var2.Heartbeat:Connect(function(deltaTime)
+        end
+    end)
+end)

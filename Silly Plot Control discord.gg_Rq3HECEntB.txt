@@ -1,0 +1,106 @@
+-- Why Buy Lights? Just Buy Cxyro Hubs It's cheaper And Better https://discord.gg/Rq3HECEntB
+
+local Players            = game:GetService("Players")
+local ReplicatedStorage  = game:GetService("ReplicatedStorage")
+
+local LocalPlayer = Players.LocalPlayer
+local PlayerGui   = LocalPlayer:WaitForChild("PlayerGui")
+
+-- Create the ScreenGui
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name           = "SillysPlotControl"
+screenGui.ResetOnSpawn   = false
+screenGui.Parent         = PlayerGui
+
+-- Main draggable frame (black with white stroke)
+local mainFrame = Instance.new("Frame")
+mainFrame.Size             = UDim2.new(0, 220, 0, 110)
+mainFrame.Position         = UDim2.new(0, 10, 0, 10)           -- top-left corner offset
+mainFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+mainFrame.BorderSizePixel  = 0
+mainFrame.Active           = true
+mainFrame.Draggable        = true
+mainFrame.Parent           = screenGui
+
+local frameCorner = Instance.new("UICorner")
+frameCorner.CornerRadius = UDim.new(0, 10)
+frameCorner.Parent = mainFrame
+
+local frameStroke = Instance.new("UIStroke")
+frameStroke.Thickness = 4
+frameStroke.Color     = Color3.fromRGB(255, 255, 255)
+frameStroke.Parent    = mainFrame
+
+-- Title label
+local title = Instance.new("TextLabel")
+title.Size                  = UDim2.new(1, -20, 0, 40)
+title.Position              = UDim2.new(0, 10, 0, 5)
+title.BackgroundTransparency = 1
+title.Text                  = "Silly's Plot Control"
+title.Font                  = Enum.Font.GothamBlack
+title.TextColor3            = Color3.fromRGB(255, 255, 255)
+title.TextScaled            = true
+title.TextWrapped           = true
+title.Parent                = mainFrame
+
+-- Credit / handle
+local credit = Instance.new("TextLabel")
+credit.Size                  = UDim2.new(1, -20, 0, 20)
+credit.Position              = UDim2.new(0, 10, 0, 35)
+credit.BackgroundTransparency = 1
+credit.Text                  = "@chilliesupersilly on tt"
+credit.Font                  = Enum.Font.Gotham
+credit.TextColor3            = Color3.fromRGB(200, 200, 200)
+credit.TextScaled            = true
+credit.TextWrapped           = true
+credit.Parent                = mainFrame
+
+-- Toggle button
+local toggleButton = Instance.new("TextButton")
+toggleButton.Size             = UDim2.new(0, 180, 0, 35)
+toggleButton.Position         = UDim2.new(0, 20, 0, 60)
+toggleButton.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+toggleButton.BorderSizePixel  = 0
+toggleButton.Font             = Enum.Font.GothamBlack
+toggleButton.Text             = "Allow/Disallow"
+toggleButton.TextColor3       = Color3.fromRGB(255, 255, 255)
+toggleButton.TextScaled       = true
+toggleButton.Parent           = mainFrame
+
+local buttonCorner = Instance.new("UICorner")
+buttonCorner.CornerRadius = UDim.new(0, 8)
+buttonCorner.Parent = toggleButton
+
+-- ────────────────────────────────────────────────
+--                Remote Event Path
+-- ────────────────────────────────────────────────
+
+local Packages       = ReplicatedStorage:WaitForChild("Packages", 10)
+local Net            = Packages and Packages:WaitForChild("Net", 5)
+local PlotService    = Net and Net:WaitForChild("RE/PlotService", 5)
+local ToggleFriends  = PlotService and PlotService:WaitForChild("ToggleFriends", 5)
+
+-- Safety check — don't connect if remote doesn't exist
+if not ToggleFriends or not ToggleFriends:IsA("RemoteEvent") then
+    warn("[Silly's Plot Control] Could not find RemoteEvent: ReplicatedStorage.Packages.Net.RE.PlotService.ToggleFriends")
+    toggleButton.Text = "Not found"
+    toggleButton.BackgroundColor3 = Color3.fromRGB(80, 0, 0)
+    return
+end
+
+-- ────────────────────────────────────────────────
+--                Button Functionality
+-- ────────────────────────────────────────────────
+
+toggleButton.MouseButton1Click:Connect(function()
+    -- Fire the remote (no arguments needed in most games that use this pattern)
+    ToggleFriends:FireServer()
+
+    -- Optional: quick visual feedback
+    local originalColor = toggleButton.BackgroundColor3
+    toggleButton.BackgroundColor3 = Color3.fromRGB(0, 180, 0)  -- green flash
+    
+    task.delay(0.4, function()
+        toggleButton.BackgroundColor3 = originalColor
+    end)
+end)

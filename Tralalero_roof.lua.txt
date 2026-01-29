@@ -1,0 +1,77 @@
+--// Tralalero Roof - Visual Teleport 60 studs
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+local camera = workspace.CurrentCamera
+
+-- Criar ScreenGui
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Parent = game.CoreGui
+
+-- Frame principal
+local MainFrame = Instance.new("Frame")
+MainFrame.Size = UDim2.new(0, 220, 0, 120)
+MainFrame.Position = UDim2.new(0.5, -110, 0.5, -60)
+MainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 25)
+MainFrame.BorderSizePixel = 0
+MainFrame.Active = true
+MainFrame.Draggable = true
+MainFrame.Parent = ScreenGui
+
+-- Título
+local Title = Instance.new("TextLabel")
+Title.Size = UDim2.new(1, 0, 0, 40)
+Title.BackgroundTransparency = 1
+Title.Font = Enum.Font.GothamBold
+Title.Text = "Tralalero Roof"
+Title.TextSize = 22
+Title.TextStrokeTransparency = 0.2
+Title.Parent = MainFrame
+
+-- Animação arco-íris no título
+task.spawn(function()
+    local t = 0
+    while Title do
+        t += 0.05
+        local r = math.sin(t) * 127 + 128
+        local g = math.sin(t + 2) * 127 + 128
+        local b = math.sin(t + 4) * 127 + 128
+        Title.TextColor3 = Color3.fromRGB(r, g, b)
+        task.wait(0.05)
+    end
+end)
+
+-- Botão Rooftp
+local Button = Instance.new("TextButton")
+Button.Size = UDim2.new(0.8, 0, 0, 40)
+Button.Position = UDim2.new(0.1, 0, 0.55, 0)
+Button.BackgroundColor3 = Color3.fromRGB(0, 80, 200)
+Button.TextColor3 = Color3.fromRGB(255, 255, 255)
+Button.Font = Enum.Font.GothamBold
+Button.Text = "Rooftp"
+Button.TextSize = 18
+Button.AutoButtonColor = true
+Button.Parent = MainFrame
+Button.BorderSizePixel = 0
+local corner = Instance.new("UICorner", Button)
+corner.CornerRadius = UDim.new(0, 12)
+
+-- Função Rooftp: TP visual de 60 studs pra cima
+local function Rooftp()
+    local char = player.Character
+    if not char then return end
+    local hrp = char:FindFirstChild("HumanoidRootPart")
+    if not hrp then return end
+
+    local realPos = hrp.CFrame
+    local oldParent = hrp.Parent
+
+    -- Teleporte 60 studs (local apenas)
+    hrp.CFrame = realPos + Vector3.new(0, 60, 0)
+    hrp.Parent = nil
+
+    task.wait(0.05)
+    hrp.Parent = oldParent
+end
+
+-- Clique ativa a função
+Button.MouseButton1Click:Connect(Rooftp)

@@ -1,0 +1,100 @@
+-- Why Buy Lights? Just Buy Cxyro Hubs It's cheaper And Better https://discord.gg/Rq3HECEntB
+
+local Players      = game:GetService("Players")
+local TweenService = game:GetService("TweenService")  -- Loaded but unused here
+local RunService   = game:GetService("RunService")    -- Loaded but unused here
+
+local LocalPlayer  = Players.LocalPlayer
+local PlayerGui    = LocalPlayer:WaitForChild("PlayerGui")
+
+-- Create ScreenGui
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name           = "SillyBoosterGUI"
+screenGui.ResetOnSpawn   = false
+screenGui.IgnoreGuiInset = false
+screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+screenGui.Parent         = PlayerGui
+
+-- Main dark frame (top-right-ish position)
+local mainFrame = Instance.new("Frame")
+mainFrame.Size             = UDim2.new(0, 140, 0, 95)
+mainFrame.Position         = UDim2.new(1, -153, 0.29, 0)  -- anchored near top-right
+mainFrame.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
+mainFrame.BorderSizePixel  = 0
+mainFrame.Active           = false          -- Not draggable in current state
+mainFrame.Parent           = screenGui
+
+local frameCorner = Instance.new("UICorner")
+frameCorner.CornerRadius = UDim.new(0, 10)
+frameCorner.Parent = mainFrame
+
+local frameStroke = Instance.new("UIStroke")
+frameStroke.Thickness = 2
+frameStroke.Color     = Color3.fromRGB(90, 170, 255)  -- Nice blue accent
+frameStroke.Parent    = mainFrame
+
+-- Title label
+local titleLabel = Instance.new("TextLabel")
+titleLabel.Size                  = UDim2.new(1, -10, 0, 26)
+titleLabel.Position              = UDim2.new(0, 5, 0, 5)
+titleLabel.BackgroundTransparency = 1
+titleLabel.Text                  = "SILLY BOOSTER"
+titleLabel.TextColor3            = Color3.fromRGB(255, 255, 255)
+titleLabel.TextSize              = 14
+titleLabel.Font                  = Enum.Font.GothamBold
+titleLabel.TextXAlignment        = Enum.TextXAlignment.Center
+titleLabel.Parent                = mainFrame
+
+-- Input box for value (default "25" — probably multiplier)
+local valueBox = Instance.new("TextBox")
+valueBox.Size                  = UDim2.new(1, -24, 0, 26)
+valueBox.Position              = UDim2.new(0, 12, 0, 36)
+valueBox.BackgroundColor3      = Color3.fromRGB(30, 30, 30)
+valueBox.Text                  = "25"
+valueBox.TextColor3            = Color3.fromRGB(255, 255, 255)
+valueBox.TextSize              = 14
+valueBox.Font                  = Enum.Font.Gotham
+valueBox.ClearTextOnFocus      = false
+valueBox.Parent                = mainFrame
+
+local boxCorner = Instance.new("UICorner")
+boxCorner.CornerRadius = UDim.new(0, 6)
+boxCorner.Parent = valueBox
+
+local boxStroke = Instance.new("UIStroke")
+boxStroke.Color = Color3.fromRGB(90, 170, 255)
+boxStroke.Parent = valueBox
+
+-- Unused connection (probably planned for live validation)
+-- valueBox:GetPropertyChangedSignal("Text"):Connect(function()
+--     -- Add number validation here later, e.g. tonumber() check
+-- end)
+
+-- Bottom toggle switch container (looks like an on/off slider style)
+local toggleFrame = Instance.new("Frame")
+toggleFrame.Size             = UDim2.new(0, 50, 0, 22)
+toggleFrame.Position         = UDim2.new(0.5, -25, 1, -30)  -- centered bottom
+toggleFrame.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+toggleFrame.Parent           = mainFrame
+
+local toggleCorner = Instance.new("UICorner")
+toggleCorner.CornerRadius = UDim.new(1, 0)  -- fully rounded (pill shape)
+toggleCorner.Parent = toggleFrame
+
+-- The moving circle inside the toggle
+local toggleCircle = Instance.new("Frame")
+toggleCircle.Size             = UDim2.new(0, 18, 0, 18)
+toggleCircle.Position         = UDim2.new(0, 2, 0.5, -9)  -- left side = off position
+toggleCircle.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+toggleCircle.Parent           = toggleFrame
+
+local circleCorner = Instance.new("UICorner")
+circleCorner.CornerRadius = UDim.new(1, 0)
+circleCorner.Parent = toggleCircle
+
+-- Unused input connection (probably planned to toggle booster)
+-- toggleFrame.InputBegan:Connect(function(input, gameProcessed)
+--     if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+--         -- Toggle logic here: change circle position + apply booster
+--     end
+-- end)

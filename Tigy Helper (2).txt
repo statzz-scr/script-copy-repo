@@ -1,0 +1,241 @@
+- hi skids
+
+local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+local LocalPlayer = Players.LocalPlayer
+
+-- Create GUI
+local GameUI = Instance.new("ScreenGui")
+GameUI.Name = "GameUI"
+GameUI.ResetOnSpawn = false
+GameUI.Parent = game:GetService("CoreGui")
+
+local tweenInfo = TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+
+-- Helper functions
+local UDim2_New = UDim2.new
+local Vector2_New = Vector2.new
+local Color3_FromRGB = Color3.fromRGB
+local UDim_New = UDim.new
+local Enum_Font = Enum.Font
+local Enum_TextXAlignment = Enum.TextXAlignment
+
+-- Function to create a toggle frame (reusable for buttons)
+local function createToggleFrame(text, positionY)
+    local frame = Instance.new("Frame")
+    frame.Size = UDim2_New(0, 220, 0, 60)
+    frame.Position = UDim2_New(0.5, -110, positionY, 0)
+    frame.BackgroundColor3 = Color3_FromRGB(30, 30, 30)
+    frame.BorderSizePixel = 0
+    frame.AnchorPoint = Vector2_New(0.5, 0)
+    frame.Active = true
+    frame.Draggable = true
+    frame.Parent = GameUI
+
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim_New(0, 12)
+    corner.Parent = frame
+
+    local label = Instance.new("TextLabel")
+    label.Size = UDim2_New(0.6, 0, 1, 0)
+    label.Position = UDim2_New(0, 15, 0, 0)
+    label.BackgroundTransparency = 1
+    label.Text = text
+    label.TextColor3 = Color3_FromRGB(255, 255, 255)
+    label.Font = Enum_Font.GothamSemibold
+    label.TextSize = 20
+    label.TextXAlignment = Enum_TextXAlignment.Left
+    label.Parent = frame
+
+    local button = Instance.new("TextButton")
+    button.Size = UDim2_New(0, 60, 0, 28)
+    button.Position = UDim2_New(1, -75, 0.5, -14)
+    button.BackgroundColor3 = Color3_FromRGB(50, 50, 50)
+    button.BorderSizePixel = 0
+    button.Text = ""
+    button.Parent = frame
+
+    local buttonCorner = Instance.new("UICorner")
+    buttonCorner.CornerRadius = UDim_New(0, 14)
+    buttonCorner.Parent = button
+
+    local slider = Instance.new("Frame")
+    slider.Size = UDim2_New(0.5, -2, 1, -4)
+    slider.Position = UDim2_New(0, 2, 0, 2)
+    slider.BackgroundColor3 = Color3_FromRGB(0, 170, 255)
+    slider.BorderSizePixel = 0
+    slider.Parent = button
+
+    local sliderCorner = Instance.new("UICorner")
+    slider.CornerRadius = UDim_New(0, 12)
+    slider.Parent = slider
+
+    return frame, button, slider
+end
+
+-- Create toggles
+local _, noAnimBtn, noAnimSlider = createToggleFrame("No Animation", 0.6)
+local _, desyncBtn, desyncSlider = createToggleFrame("Respawn Desync", 0.72)
+local _, kickBtn, kickSlider = createToggleFrame("Auto Kick", 0.84)
+
+-- Admin Spammer button (slightly different style)
+local adminFrame = Instance.new("Frame")
+adminFrame.Size = UDim2_New(0, 220, 0, 60)
+adminFrame.Position = UDim2_New(0.5, -110, 0.96, 0)
+adminFrame.BackgroundColor3 = Color3_FromRGB(25, 25, 25)
+adminFrame.Active = true
+adminFrame.Draggable = true
+adminFrame.Parent = GameUI
+
+local adminCorner = Instance.new("UICorner")
+adminCorner.CornerRadius = UDim_New(0, 12)
+adminCorner.Parent = adminFrame
+
+local adminLabel = Instance.new("TextLabel")
+adminLabel.Size = UDim2_New(0.65, -10, 1, 0)
+adminLabel.Position = UDim2_New(0, 10, 0, 0)
+adminLabel.BackgroundTransparency = 1
+adminLabel.Text = "Admin Spammer"
+adminLabel.Font = Enum_Font.GothamBold
+adminLabel.TextSize = 16
+adminLabel.TextColor3 = Color3.new(1, 1, 1)
+adminLabel.TextXAlignment = Enum_TextXAlignment.Left
+adminLabel.Parent = adminFrame
+
+local adminBtn = Instance.new("TextButton")
+adminBtn.Size = UDim2_New(0.3, -10, 0.7, 0)
+adminBtn.Position = UDim2_New(0.65, 5, 0.15, 0)
+adminBtn.Text = "USE"
+adminBtn.Font = Enum_Font.GothamBold
+adminBtn.TextSize = 14
+adminBtn.BackgroundColor3 = Color3_FromRGB(0, 120, 255)
+adminBtn.TextColor3 = Color3.new(1, 1, 1)
+adminBtn.Parent = adminFrame
+
+local adminBtnCorner = Instance.new("UICorner")
+adminBtnCorner.CornerRadius = UDim_New(0, 8)
+adminBtnCorner.Parent = adminBtn
+
+-- "No Animation" toggle
+noAnimBtn.MouseButton1Click:Connect(function()
+    TweenService:Create(noAnimSlider, tweenInfo, {Position = UDim2_New(0.5, -2, 0, 2)}):Play()
+    
+    local char = LocalPlayer.Character
+    if char then
+        local humanoid = char:WaitForChild("Humanoid")
+        local animator = humanoid:FindFirstChildOfClass("Animator")
+        if animator then
+            local anim = Instance.new("Animation")
+            anim.AnimationId = "rbxassetid://507766666"  -- Default idle
+            local track = animator:LoadAnimation(anim)
+            track.Priority = Enum.AnimationPriority.Action
+            track.Looped = false
+            track:Play(0)
+            track.Stopped:Connect(function()
+                track:Play(0)  -- Loop by replaying
+            end)
+        end
+    end
+end)
+
+-- "Respawn Desync" toggle
+desyncBtn.MouseButton1Click:Connect(function()
+    TweenService:Create(desyncSlider, tweenInfo, {Position = UDim2_New(0.5, -2, 0, 2)}):Play()
+    
+    local char = LocalPlayer.Character
+    if char then
+        local humanoid = char:FindFirstChildWhichIsA("Humanoid")
+        if humanoid then
+            humanoid:ChangeState(Enum.HumanoidStateType.Dead)
+        end
+        char:ClearAllChildren()
+        local fake = Instance.new("Model")
+        fake.Parent = workspace
+        LocalPlayer.Character = fake
+        task.wait()
+        LocalPlayer.Character = char
+        fake:Destroy()
+    end
+    
+    task.spawn(function()
+        -- Bunch of FastFlag manipulations for desync/lag
+        setfflag("GameNetPVHeaderRotationalVelocityZeroCutoffExponent", "-5000")
+        setfflag("LargeReplicatorWrite5", "true")
+        setfflag("LargeReplicatorEnabled9", "true")
+        -- ... (many more similar flags for high bandwidth, low thresholds, etc.)
+        
+        -- Force jump/land and network ownership toggle
+        local humanoid = LocalPlayer.Character:FindFirstChildWhichIsA("Humanoid")
+        if humanoid then
+            humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+            task.wait(0.1)
+            humanoid:ChangeState(Enum.HumanoidStateType.Landed)
+        end
+        local hrp = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+        if hrp then
+            pcall(function()
+                hrp:SetNetworkOwner(nil)
+                task.wait(0.05)
+                hrp:SetNetworkOwner(LocalPlayer)
+            end)
+        end
+    end)
+end)
+
+-- "Auto Kick" (buggy crash attempt)
+kickBtn.MouseButton1Click:Connect(function()
+    TweenService:Create(kickSlider, tweenInfo, {Position = UDim2_New(0.5, -2, 0, 2)}):Play()
+    
+    task.spawn(function()
+        task.wait(0.2)
+        for _, gui in pairs(LocalPlayer.PlayerGui:GetChildren()) do
+            if gui:IsA("ScreenGui") then
+                for _, descendant in pairs(gui:GetDescendants()) do
+                    if descendant:IsA("TextLabel") then
+                        local text = descendant.Text
+                        if text then
+                            error("[internal]:1999: invalid argument #1 to 'gsub' (string expected, got boolean)")  -- Intentional error
+                        end
+                    end
+                end
+            end
+        end
+    end)
+end)
+
+-- "Admin Spammer" (incomplete)
+adminBtn.MouseButton1Click:Connect(function()
+    local char = LocalPlayer.Character
+    if char and char:FindFirstChild("HumanoidRootPart") then
+        local myPos = char.HumanoidRootPart.Position
+        for _, player in pairs(Players:GetPlayers()) do
+            if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+                local dist = (myPos - player.Character.HumanoidRootPart.Position).Magnitude
+                -- (Does nothing with distance - likely unfinished spam logic)
+            end
+        end
+    end
+end)
+
+-- On respawn: re-apply no-animation + desync flags
+LocalPlayer.CharacterAdded:Connect(function(char)
+    local humanoid = char:WaitForChild("Humanoid")
+    local animator = humanoid:FindFirstChildOfClass("Animator")
+    if animator then
+        local anim = Instance.new("Animation")
+        anim.AnimationId = "rbxassetid://507766666"
+        local track = animator:LoadAnimation(anim)
+        track.Priority = Enum.AnimationPriority.Action
+        track.Looped = false
+        track:Play(0)
+        track.Stopped:Connect(function()
+            track:Play(0)
+        end)
+    end
+    
+    task.spawn(function()
+        -- Same FastFlag desync setup as above
+        -- ... (repeated long list of setfflag calls)
+        -- Jump/land + network ownership toggle
+    end)
+end)
