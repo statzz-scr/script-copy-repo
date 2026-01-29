@@ -1,0 +1,429 @@
+-- Admin Abuse Helper Readable Because Tenacious Is Gay
+
+local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+local RunService = game:GetService("RunService")        -- Not used directly here, but required for later features
+local UserInputService = game:GetService("UserInputService") -- Not used yet
+local HttpService = game:GetService("HttpService")
+
+local LocalPlayer = Players.LocalPlayer
+
+-- Create the main ScreenGui
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "AdminAbusePanel"
+screenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
+screenGui.ResetOnSpawn = false
+
+-- Main Frame (draggable window)
+local mainFrame = Instance.new("Frame")
+mainFrame.Size = UDim2.new(0, 300, 0, 420)
+mainFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
+mainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
+mainFrame.BackgroundColor3 = Color3.fromRGB(24, 24, 24)
+mainFrame.BorderSizePixel = 0
+mainFrame.Active = true
+mainFrame.Draggable = true
+mainFrame.Parent = screenGui
+
+Instance.new("UICorner", mainFrame).CornerRadius = UDim.new(0, 14)
+
+local stroke = Instance.new("UIStroke", mainFrame)
+stroke.Thickness = 1
+stroke.Transparency = 0.9
+
+-- Header bar
+local header = Instance.new("Frame", mainFrame)
+header.Size = UDim2.new(1, 0, 0, 56)
+header.BackgroundTransparency = 1
+
+local titleLabel = Instance.new("TextLabel", header)
+titleLabel.Size = UDim2.new(1, -24, 1, 0)
+titleLabel.Position = UDim2.new(0, 60, 0, 0)
+titleLabel.BackgroundTransparency = 1
+titleLabel.Font = Enum.Font.GothamBold
+titleLabel.Text = "Admin Abuse Helper"
+titleLabel.TextSize = 22
+titleLabel.TextColor3 = Color3.fromRGB(240, 240, 240)
+titleLabel.TextXAlignment = Enum.TextXAlignment.Left
+titleLabel.TextYAlignment = Enum.TextYAlignment.Center
+
+-- Close button (X)
+local closeButton = Instance.new("TextButton", header)
+closeButton.Size = UDim2.new(0, 28, 0, 28)
+closeButton.Position = UDim2.new(1, -36, 0.5, -14)
+closeButton.BackgroundColor3 = Color3.fromRGB(48, 48, 48)
+closeButton.Font = Enum.Font.GothamBold
+closeButton.Text = "X"
+closeButton.TextSize = 20
+closeButton.TextColor3 = Color3.fromRGB(240, 240, 240)
+closeButton.AutoButtonColor = false
+
+Instance.new("UICorner", closeButton).CornerRadius = UDim.new(0, 8)
+
+local closeStroke = Instance.new("UIStroke", closeButton)
+closeStroke.Thickness = 1
+closeStroke.Transparency = 0.9
+
+closeButton.MouseButton1Click:Connect(function()
+    screenGui:Destroy()
+end)
+
+-- Scrolling area for toggles
+local scrollingFrame = Instance.new("ScrollingFrame", mainFrame)
+scrollingFrame.Size = UDim2.new(1, -24, 1, -80)
+scrollingFrame.Position = UDim2.new(0, 12, 0, 64)
+scrollingFrame.BackgroundTransparency = 1
+scrollingFrame.ScrollBarThickness = 8
+scrollingFrame.AutomaticCanvasSize = Enum.AutomaticSize.Y
+
+local listLayout = Instance.new("UIListLayout", scrollingFrame)
+listLayout.Padding = UDim.new(0, 12)
+listLayout.SortOrder = Enum.SortOrder.LayoutOrder
+listLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+
+-- Function to create a single toggle tile
+local function createToggle(name)
+    local holder = Instance.new("Frame")
+    holder.Size = UDim2.new(0.95, 0, 0, 66)
+    holder.BackgroundTransparency = 1
+    holder.Parent = scrollingFrame
+
+    local tile = Instance.new("Frame", holder)
+    tile.Size = UDim2.new(1, 0, 1, 0)
+    tile.BackgroundColor3 = Color3.fromRGB(33, 33, 33)
+    tile.BorderSizePixel = 0
+    Instance.new("UICorner", tile).CornerRadius = UDim.new(0, 12)
+
+    local tileStroke = Instance.new("UIStroke", tile)
+    tileStroke.Thickness = 1
+    tileStroke.Transparency = 0.9
+
+    -- Icon circle (first letter of the toggle name)
+    local iconFrame = Instance.new("Frame", tile)
+    iconFrame.Size = UDim2.new(0, 46, 0, 46)
+    iconFrame.Position = UDim2.new(0, 10, 0.5, -23)
+    iconFrame.BackgroundColor3 = Color3.fromRGB(46, 46, 46)
+    Instance.new("UICorner", iconFrame).CornerRadius = UDim.new(0, 10)
+
+    local iconLabel = Instance.new("TextLabel", iconFrame)
+    iconLabel.Size = UDim2.new(1, 0, 1, 0)
+    iconLabel.BackgroundTransparency = 1
+    iconLabel.Font = Enum.Font.GothamBold
+    iconLabel.Text = string.sub(name, 1, 1)
+    iconLabel.TextColor3 = Color3.fromRGB(220, 220, 220)
+    iconLabel.TextSize = 18
+    iconLabel.TextYAlignment = Enum.TextYAlignment.Center
+
+    -- Toggle name label
+    local nameLabel = Instance.new("TextLabel", tile)
+    nameLabel.Size = UDim2.new(0.58, 0, 1, 0)
+    nameLabel.Position = UDim2.new(0, 66, 0, 0)
+    nameLabel.BackgroundTransparency = 1
+    nameLabel.Font = Enum.Font.GothamSemibold
+    nameLabel.Text = name
+    nameLabel.TextSize = 16
+    nameLabel.TextColor3 = Color3.fromRGB(240, 240, 240)
+    nameLabel.TextXAlignment = Enum.TextXAlignment.Left
+    nameLabel.TextYAlignment = Enum.TextYAlignment.Center
+
+    -- Toggle switch background
+    local switchBg = Instance.new("Frame", tile)
+    switchBg.Size = UDim2.new(0, 84, 0, 36)
+    switchBg.Position = UDim2.new(1, -100, 0.5, -18)
+    switchBg.BackgroundColor3 = Color3.fromRGB(58, 58, 58)
+    switchBg.BorderSizePixel = 0
+    Instance.new("UICorner", switchBg).CornerRadius = UDim.new(0, 18)
+
+    local switchStroke = Instance.new("UIStroke", switchBg)
+    switchStroke.Thickness = 1
+    switchStroke.Transparency = 0.9
+
+    -- Toggle knob
+    local knob = Instance.new("Frame", switchBg)
+    knob.Size = UDim2.new(0, 28, 0, 28)
+    knob.Position = UDim2.new(0, 6, 0, 4)
+    knob.BackgroundColor3 = Color3.fromRGB(240, 240, 240)
+    knob.BorderSizePixel = 0
+    Instance.new("UICorner", knob).CornerRadius = UDim.new(0, 14)
+
+    -- Invisible click detector
+    local clickDetector = Instance.new("TextButton", tile)
+    clickDetector.Size = UDim2.new(1, 0, 1, 0)
+    clickDetector.BackgroundTransparency = 1
+    clickDetector.Text = ""
+    clickDetector.AutoButtonColor = false
+
+    local isEnabled = false
+    local stateChanged = Instance.new("BindableEvent")
+
+    local function setState(enabled)
+        isEnabled = enabled
+
+        if enabled then
+            TweenService:Create(knob, TweenInfo.new(0.22, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+                Position = UDim2.new(1, -34, 0, 4)
+            }):Play()
+            TweenService:Create(switchBg, TweenInfo.new(0.22), { BackgroundColor3 = Color3.fromRGB(45, 135, 255) }):Play()
+            TweenService:Create(iconFrame, TweenInfo.new(0.22), { BackgroundColor3 = Color3.fromRGB(38, 120, 255) }):Play()
+        else
+            TweenService:Create(knob, TweenInfo.new(0.22, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+                Position = UDim2.new(0, 6, 0, 4)
+            }):Play()
+            TweenService:Create(switchBg, TweenInfo.new(0.22), { BackgroundColor3 = Color3.fromRGB(58, 58, 58) }):Play()
+            TweenService:Create(iconFrame, TweenInfo.new(0.22), { BackgroundColor3 = Color3.fromRGB(46, 46, 46) }):Play()
+        end
+
+        stateChanged:Fire(isEnabled)
+    end
+
+    clickDetector.MouseButton1Click:Connect(function()
+        setState(not isEnabled)
+    end)
+
+    return {
+        Holder = holder,
+        Tile = tile,
+        Touch = clickDetector,
+        GetState = function() return isEnabled end,
+        SetState = setState,
+        Changed = stateChanged.Event
+    }
+end
+
+-- Create toggles
+local toggleNames = { "Anchor", "Auto Buy" }
+local toggles = {}
+
+for i, name in ipairs(toggleNames) do
+    local toggle = createToggle(name)
+    toggle.Holder.LayoutOrder = i
+    toggles[name] = toggle
+end
+
+-- Auto-resize scrolling frame
+listLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+    scrollingFrame.CanvasSize = UDim2.new(0, 0, 0, listLayout.AbsoluteContentSize.Y + 8)
+end)
+
+-- ==================== Settings Save/Load ====================
+
+local SETTINGS_FILE = "StealMenuSettings.json"
+
+local function canUseFileSystem()
+    return (typeof(writefile) == "function" and typeof(readfile) == "function") or
+           (typeof(syn) == "table" and typeof(syn.write_file) == "function" and typeof(syn.read_file) == "function")
+end
+
+local function writeFile(filename, content)
+    if typeof(writefile) == "function" then
+        writefile(filename, content)
+        return true
+    elseif typeof(syn) == "table" and typeof(syn.write_file) == "function" then
+        syn.write_file(filename, content)
+        return true
+    end
+    return false
+end
+
+local function readFile(filename)
+    if typeof(readfile) == "function" then
+        return readfile(filename)
+    elseif typeof(syn) == "table" and typeof(syn.read_file) == "function" then
+        return syn.read_file(filename)
+    end
+    return nil
+end
+
+local function saveSettings()
+    local settings = {}
+    for name, toggle in pairs(toggles) do
+        if name ~= "Desync" and name ~= "Floor Steal" then
+            settings[name] = toggle:GetState()
+        end
+    end
+
+    local success, json = pcall(HttpService.JSONEncode, HttpService, settings)
+    if success and canUseFileSystem() then
+        pcall(function()
+            writeFile(SETTINGS_FILE, json)
+        end)
+    end
+end
+
+local function loadSettings()
+    if not canUseFileSystem() then return nil end
+
+    local success, content = pcall(readFile, SETTINGS_FILE)
+    if not success or not content then return nil end
+
+    local decodedSuccess, data = pcall(HttpService.JSONDecode, HttpService, content)
+    if decodedSuccess then
+        return data
+    end
+    return nil
+end
+
+-- Apply loaded settings
+local loaded = loadSettings()
+if loaded then
+    for name, state in pairs(loaded) do
+        if toggles[name] then
+            toggles[name]:SetState(state)
+        end
+    end
+else
+    -- Fallback: use player attributes if available
+    for name, toggle in pairs(toggles) do
+        if name ~= "Desync" and name ~= "Floor Steal" then
+            local attr = LocalPlayer:GetAttribute("StealTools_" .. name)
+            if attr ~= nil then
+                toggle:SetState(attr)
+            end
+        end
+    end
+end
+
+-- ==================== Feature: Anchor ====================
+
+if toggles.Anchor then
+    local function setAllPartsAnchored(anchored)
+        local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+        for _, part in pairs(character:GetDescendants()) do
+            if part:IsA("BasePart") then
+                part.Anchored = anchored
+            end
+        end
+    end
+
+    toggles.Anchor.Changed:Connect(setAllPartsAnchored)
+
+    if toggles.Anchor:GetState() then
+        setAllPartsAnchored(true)
+    end
+
+    LocalPlayer.CharacterAdded:Connect(function()
+        task.wait(0.5)
+        if toggles.Anchor:GetState() then
+            setAllPartsAnchored(true)
+        end
+    end)
+end
+
+-- ==================== Feature: Auto Buy ====================
+
+if toggles["Auto Buy"] then
+    local Workspace = game:GetService("Workspace")
+    local activePrompts = {}
+    local isRunning = false
+    local renderConnection, descendantConnection
+
+    local function isValidPrompt(obj)
+        return obj and obj:IsA("ProximityPrompt") and
+               obj.Parent and obj.Parent.Name == "PromptAttachment" and
+               obj.Parent.Parent and obj.Parent.Parent.Name == "Part" and
+               obj.Parent.Parent.Parent and obj.Parent.Parent.Parent:IsA("Model")
+    end
+
+    local function getPromptPosition(prompt)
+        if prompt.Parent.Name == "PromptAttachment" then
+            return prompt.Parent.Parent.Position
+        elseif prompt.Parent:IsA("BasePart") then
+            return prompt.Parent.Position
+        elseif prompt.Parent:IsA("Model") and prompt.Parent.PrimaryPart then
+            return prompt.Parent.PrimaryPart.Position
+        end
+        return nil
+    end
+
+    local function isOnScreen(prompt)
+        local pos = getPromptPosition(prompt)
+        if not pos then return false end
+        local _, onScreen = workspace.CurrentCamera:WorldToViewportPoint(pos)
+        return onScreen
+    end
+
+    local function holdInput(prompt)
+        for _, input in pairs({ Enum.UserInputType.Keyboard, Enum.UserInputType.MouseButton1, Enum.UserInputType.Touch }) do
+            pcall(function() prompt:InputHoldBegin(input) end)
+        end
+    end
+
+    local function releaseInput(prompt)
+        for _, input in pairs({ Enum.UserInputType.Keyboard, Enum.UserInputType.MouseButton1, Enum.UserInputType.Touch }) do
+            pcall(function() prompt:InputHoldEnd(input) end)
+        end
+    end
+
+    local function startAutoBuy()
+        if isRunning then return end
+        isRunning = true
+
+        -- Index existing prompts
+        for _, obj in pairs(Workspace:GetDescendants()) do
+            if isValidPrompt(obj) then
+                activePrompts[obj] = true
+            end
+        end
+
+        -- Listen for new prompts
+        descendantConnection = Workspace.DescendantAdded:Connect(function(obj)
+            if isValidPrompt(obj) then
+                activePrompts[obj] = true
+            end
+        end)
+
+        -- Main loop
+        renderConnection = RunService.RenderStepped:Connect(function()
+            local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+            if not hrp then return end
+
+            for prompt in pairs(activePrompts) do
+                if prompt.Parent and isValidPrompt(prompt) then
+                    local pos = getPromptPosition(prompt)
+                    if pos and (hrp.Position - pos).Magnitude <= 15 and isOnScreen(prompt) then
+                        holdInput(prompt)
+                    else
+                        releaseInput(prompt)
+                    end
+                else
+                    activePrompts[prompt] = nil
+                end
+            end
+        end)
+    end
+
+    local function stopAutoBuy()
+        if not isRunning then return end
+        isRunning = false
+
+        if renderConnection then renderConnection:Disconnect() end
+        if descendantConnection then descendantConnection:Disconnect() end
+
+        for prompt in pairs(activePrompts) do
+            releaseInput(prompt)
+        end
+        activePrompts = {}
+    end
+
+    toggles["Auto Buy"].Changed:Connect(function(enabled)
+        if enabled then
+            startAutoBuy()
+        else
+            stopAutoBuy()
+        end
+    end)
+
+    if toggles["Auto Buy"]:GetState() then
+        startAutoBuy()
+    end
+
+    LocalPlayer.CharacterRemoving:Connect(function()
+        for prompt in pairs(activePrompts) do
+            releaseInput(prompt)
+        end
+        activePrompts = {}
+    end)
+end
+
+-- Return the toggles table for external access if needed
+return toggles
